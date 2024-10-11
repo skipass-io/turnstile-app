@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "turnstile-app"
-version = "0.0.2"
+version = "0.0.3"
 description = "Turnstile app on Raspberry Pi 5 with PiCamera for skipass.io"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
