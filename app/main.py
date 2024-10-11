@@ -36,7 +36,7 @@ label_bottom = QLabel()
 window = QWidget()
 window.setWindowTitle("Qt Picamera2 App")
 
-label_top.setFixedHeight(150)#setFixedWidth(400)
+label_top.setFixedHeight(150)
 label_top.setAlignment(QtCore.Qt.AlignTop)
 layout_v = QVBoxLayout()
 layout_v.addWidget(label_top)
@@ -45,7 +45,12 @@ layout_v.addWidget(label_bottom)
 window.resize(1200, 600)
 window.setLayout(layout_v)
 
-picam2.start()
-window.show()
-app.exec_()
-picam2.stop()
+
+def main():
+    picam2.start()
+    window.show()
+    app.exec_()
+    picam2.stop()
+
+if __name__ == "__main__":
+    main()
