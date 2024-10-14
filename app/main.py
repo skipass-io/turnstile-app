@@ -3,10 +3,8 @@ import numpy as np
 from PySide2 import QtCore
 from PySide2.QtWidgets import (
     QApplication,
-    QCheckBox,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QVBoxLayout,
     QWidget,
 )
