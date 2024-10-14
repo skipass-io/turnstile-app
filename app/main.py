@@ -14,10 +14,10 @@ from qgl_picam2_widget import QGlPicamera2
 
 
 def request_callback(request):
-    label_top.setText("Top")
-    label_bottom.setText("Bottom")
-    window.setStyleSheet("background-color: #000;")
-    # label_top.setText("".join(f"{k}: {v}\n" for k, v in request.get_metadata().items()))
+    label_left.setText("Left")
+    label_right.setText("Right")
+    window.setStyleSheet("background-color: #ffffff;")
+
 
 
 def cleanup():
@@ -38,23 +38,23 @@ app = QApplication(sys.argv)
 qpicamera2 = QGlPicamera2(
     picam2, width=PICAM2_WIDTH, height=PICAM2_HEIGHT, bg_colour=(255, 255, 255), keep_ar=False
 )
-label_top = QLabel()
-label_bottom = QLabel()
+label_left = QLabel()
+label_right = QLabel()
 window = QWidget()
 window.setWindowTitle("Qt Picamera2 App")
 window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
 
 
-label_top.setFixedWidth(323)
-label_bottom.setFixedWidth(323)
-label_top.setAlignment(QtCore.Qt.AlignTop)
-label_bottom.setAlignment(QtCore.Qt.AlignTop)
+label_left.setFixedWidth(323)
+label_right.setFixedWidth(323)
+label_left.setAlignment(QtCore.Qt.AlignTop)
+label_right.setAlignment(QtCore.Qt.AlignTop)
 
 
 layout_h = QHBoxLayout()
-layout_h.addWidget(label_top)
+layout_h.addWidget(label_left)
 layout_h.addWidget(qpicamera2)
-layout_h.addWidget(label_bottom)
+layout_h.addWidget(label_right)
 # window.resize(1200, 600)
 window.setLayout(layout_h)
 window.showFullScreen()
