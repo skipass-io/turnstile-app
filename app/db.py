@@ -3,10 +3,10 @@ from typing import Dict, List, Tuple
 
 from config import DBSQLiteSettings
 
-settings = DBSQLiteSettings()
+_settings = DBSQLiteSettings()
 
 
-conn = sqlite3.connect(settings.db_path)
+conn = sqlite3.connect(_settings.db_path)
 cursor = conn.cursor()
 
 
