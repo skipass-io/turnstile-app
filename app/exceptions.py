@@ -1,4 +1,4 @@
-"""qt app customs exeptions"""
+"""qt app customs exceptions"""
 
 class NotCorrectStatusGR(Exception):
     def __init__(self, message):
