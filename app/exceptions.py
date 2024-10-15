@@ -1,7 +1,9 @@
 """qt app customs exceptions"""
 
+
 class NotCorrectStatusGR(Exception):
-    def __init__(self, message):
-        """Raise if NotCorrectStatusGR"""
-        # Call the base class constructor with the parameters it needs
+    """Raise if NotCorrectStatusGR"""
+
+    def __init__(self, current_status, correct_status):
+        message = f"Current status: {current_status}; Expected: {correct_status}"
         super().__init__(message)
