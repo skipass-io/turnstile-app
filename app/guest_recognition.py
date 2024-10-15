@@ -1,6 +1,9 @@
 import cv2 as cv
+from pyzbar.pyzbar import decode as pyzbar_decoder
+from pyzbar.pyzbar import Decoded as PyzbarDecoded
 
 from config import GuestRecognitionSettings
+from exceptions import NotCorrectStatusGR
 
 
 _settings = GuestRecognitionSettings()
@@ -18,6 +21,7 @@ class GuestRecognition:
         self.cv_rgb = None
         self.cv_gray = None
         self.face_detector = cv.CascadeClassifier(_settings.haarcascade_path)
+        self.qr_decoder = pyzbar_decoder
 
     def set_frame(self, mapped_array):
         self.frame = mapped_array.array
@@ -25,9 +29,18 @@ class GuestRecognition:
         self.cv_gray = self._cv_img("gray")
         self.status = "set_frame"
 
+    def find_qrcodes(self):
+        correct_status = "set_frame"
+        if not self.status == correct_status:
+            raise NotCorrectStatusGR(self.status, correct_status)
+
+        codes = self.qr_decoder(self.cv_gray)
+        self._draw_rectangle(codes)
+
     def find_faces(self):
-        if not self.status == "set_frame":
-            raise Exception("Not sef_frame status")
+        correct_status = "set_frame"
+        if not self.status == correct_status:
+            raise NotCorrectStatusGR(self.status, correct_status)
 
         fd_settings = _settings.face_detector_settings
 
@@ -40,10 +53,13 @@ class GuestRecognition:
                 int(self.height / fd_settings.scalar_face_detect),
             ),
         )
-        self._show_found_faces(found_faces)
+        self._draw_rectangle(found_faces)
 
-    def _show_found_faces(self, found_faces):
-        for x, y, w, h in found_faces:
+    def _draw_rectangle(self, objects):
+        for obj in objects:
+            if isinstance(obj, PyzbarDecoded):
+                obj = obj.rect
+            x, y, w, h = obj
             cv.rectangle(self.frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
 
     def _cv_img(self, color):
