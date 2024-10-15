@@ -23,7 +23,7 @@ guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
 def request_callback(request):
     with MappedArray(request, "main") as m:
-        guest_recognition.set_frame(m)
+        guest_recognition.set_frame(mapped_array=m)
         guest_recognition.find_faces()
     label_left.setText("Left side")
     label_right.setText("Right side")
