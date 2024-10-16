@@ -13,6 +13,6 @@ class NotCorrectFrameSizeGR(Exception):
 class NotCorrectStatusGR(Exception):
     """Raise if not correct status FSM"""
 
-    def __init__(self, current_status, correct_status):
-        message = f"Current status: {current_status}; Expected status: {correct_status}"
+    def __init__(self, current_status, correct_statuses):
+        message = f"Current status: {current_status}; Expected statuses: {correct_statuses}"
         super().__init__(message)
