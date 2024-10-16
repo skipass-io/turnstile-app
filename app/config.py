@@ -22,6 +22,14 @@ class FaceDetectorSettings:
 
 
 class GuestRecognitionSettings:
-    haarcascade_file = "haarcascade_frontalface_default.xml"
-    haarcascade_path = f"{BASE_DIR}/app/data/haarcascades/{haarcascade_file}"
     face_detector_settings = FaceDetectorSettings()
+    DATA_DIR = f"{BASE_DIR}/app/data"
+
+    haarcascade_file = "haarcascade_frontalface_default.xml"
+    haarcascade_path = f"{DATA_DIR}/haarcascades/{haarcascade_file}"
+
+    svm_model_file = "svm_model_160x160.pkl"
+    svm_model_path = f"{DATA_DIR}/svm_model/{svm_model_file}"
+
+    embeddings_file = "embeddings.npz"
+    embeddings_path = f"{DATA_DIR}/embeddings/{embeddings_file}"
