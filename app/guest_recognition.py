@@ -17,6 +17,13 @@ _settings = GuestRecognitionSettings()
 class GuestRecognition:
     """That's how we let the guests through"""
 
+    def _check_correct_status(self, correct_statuses):
+        if self.status not in correct_statuses:
+            raise NotCorrectStatusGR(
+                current_status=self.status,
+                correct_statuses=correct_statuses,
+            )
+
     def _load_data_for_ml(self):
         self.svm_model = pickle.load(open(_settings.svm_model_path, "rb"))
         self.faces_embeddings = np.load(_settings.embeddings_path)
@@ -35,30 +42,22 @@ class GuestRecognition:
         return cv.cvtColor(self.frame, cv_color)
 
     def _set_frame(self, mapped_array):
+        self._check_correct_status(correct_statuses=["loaded_data_for_ml"])
+
         self.frame = mapped_array.array
         self.cv_rgb = self._cv_img("rgb")
         self.cv_gray = self._cv_img("gray")
         self.status = "set_frame"
 
     def _find_qrcodes(self):
-        correct_status = "set_frame"
-        if not self.status == correct_status:
-            raise NotCorrectStatusGR(
-                current_status=self.status,
-                correct_status=correct_status,
-            )
+        self._check_correct_status(correct_statuses=["set_frame"])
 
         codes = self.qr_decoder(self.cv_gray)
-        self._draw_rectangle(codes)
+        self._draw_rectangles(codes, _settings.colors.BLUE_RBG)
 
     def _find_faces(self):
-        correct_status = "set_frame"
+        self._check_correct_status(correct_statuses=["set_frame"])
         fd_settings = _settings.face_detector_settings
-        if not self.status == correct_status:
-            raise NotCorrectStatusGR(
-                current_status=self.status,
-                correct_status=correct_status,
-            )
 
         found_faces = self.face_detector.detectMultiScale(
             image=self.cv_gray,
@@ -69,14 +68,14 @@ class GuestRecognition:
                 int(self.height / fd_settings.scalar_face_detect),
             ),
         )
-        self._draw_rectangle(found_faces)
+        self._draw_rectangles(found_faces, _settings.colors.DARK_BLUE_RGB)
 
-    def _draw_rectangle(self, objects):
+    def _draw_rectangles(self, objects, color_BGR=(255, 0, 0)):
         for obj in objects:
             if isinstance(obj, PyzbarDecoded):
                 obj = obj.rect
             x, y, w, h = obj
-            cv.rectangle(self.frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
+            cv.rectangle(self.frame, (x, y), (x + w, y + h), color_BGR, 4)
 
     def run(self, mapped_array):
         """Processing PiCamera frame"""
