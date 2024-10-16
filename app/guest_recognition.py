@@ -42,7 +42,9 @@ class GuestRecognition:
         return cv.cvtColor(self.frame, cv_color)
 
     def _set_frame(self, mapped_array):
-        self._check_correct_status(correct_statuses=["loaded_data_for_ml"])
+        self._check_correct_status(
+            correct_statuses=["set_frame", "loaded_data_for_ml"]
+        )  # TODO: think about array of complited statuses ot smths
 
         self.frame = mapped_array.array
         self.cv_rgb = self._cv_img("rgb")
@@ -73,6 +75,24 @@ class GuestRecognition:
         self._draw_rectangles(
             found_faces, _settings.colors.DARK_BLUE_RGB
         )  # TODO: remove drawing for all faces, replace draw for each face
+        for face in found_faces:
+            x, y, w, h = face
+            if (w > (self.width / 2)) & (h > (self.height / 2)):
+                self._face_recognition(
+                    face_coords=face
+                )  # TODO: instead "2" - scalar_face_recognition in _settings
+            else:
+                print("Small face")  # TODO: remove, add some business logic
+
+    def _face_recognition(self, face_coords):
+        x, y, w, h = face_coords
+        face_img = self.cv_rgb[y : y + h, x : x + w]
+        face_img = cv.resize(face_img, (160, 160))
+        face_img = np.expand_dims(face_img, axis=0)
+        ypred = self.facenet.embeddings(face_img)
+        face_name = self.svm_model.predict(ypred)
+        label = self.label_encoder.inverse_transform(face_name)[0]
+        print("facenet label:", label)  # TODO: remove, collect labels
 
     def _draw_rectangles(self, objects, color_rgb=(255, 255, 255)):
         for obj in objects:
