@@ -16,24 +16,24 @@ class DBSQLiteSettings:
 
 # Guest Recognition Settings
 class FaceDetectorSettings:
-    scale_factor = 1.3
+    scale_factor = 1.1 #1.3
     min_neighbors = 5
     scalar_face_detect = 7
 
 
 class GuestRecognitionColors:
+    #DARK_BLUE
+    DARK_BLUE_HEX = "032739"
+    DARK_BLUE_RGB = (3, 39, 57)
     # BLUE
     BLUE_HEX = "34A9ED"
     BLUE_RBG = (52, 169, 237)
-    BLUE_BGR = (237, 169, 52)
     # GREEN
     GREEN_HEX = "22CD69"
     GREEN_RBG = (34, 205, 105)
-    GREEN_BGR = (105, 205, 34)
     # RED
     RED_HEX = "ED451F"
     RED_RBG = (237, 69, 31)
-    RED_BGR = (31, 69, 237)
 
 
 class GuestRecognitionSettings:
