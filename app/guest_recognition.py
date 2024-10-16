@@ -53,7 +53,9 @@ class GuestRecognition:
         self._check_correct_status(correct_statuses=["set_frame"])
 
         codes = self.qr_decoder(self.cv_gray)
-        self._draw_rectangles(codes, _settings.colors.BLUE_RBG)
+        self._draw_rectangles(
+            codes, _settings.colors.BLUE_RBG
+        )  # TODO: remove drawing for all qr_codes, replace draw for each qr_code
 
     def _find_faces(self):
         self._check_correct_status(correct_statuses=["set_frame"])
@@ -68,7 +70,9 @@ class GuestRecognition:
                 int(self.height / fd_settings.scalar_face_detect),
             ),
         )
-        self._draw_rectangles(found_faces, _settings.colors.DARK_BLUE_RGB)
+        self._draw_rectangles(
+            found_faces, _settings.colors.DARK_BLUE_RGB
+        )  # TODO: remove drawing for all faces, replace draw for each face
 
     def _draw_rectangles(self, objects, color_rgb=(255, 255, 255)):
         for obj in objects:
