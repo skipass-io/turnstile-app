@@ -21,8 +21,24 @@ class FaceDetectorSettings:
     scalar_face_detect = 7
 
 
+class GuestRecognitionColors:
+    # BLUE
+    BLUE_HEX = "34A9ED"
+    BLUE_RBG = (52, 169, 237)
+    BLUE_GBR = (237, 169, 52)
+    # GREEN
+    GREEN_HEX = "22CD69"
+    GREEN_RBG = (34, 205, 105)
+    GREEN_GBR = (105, 205, 34)
+    # RED
+    RED_HEX = "ED451F"
+    RED_RBG = (237, 69, 31)
+    RED_GBR = (31, 69, 237)
+
+
 class GuestRecognitionSettings:
     face_detector_settings = FaceDetectorSettings()
+    colors = GuestRecognitionColors()
     DATA_DIR = f"{BASE_DIR}/app/data"
 
     haarcascade_file = "haarcascade_frontalface_default.xml"
