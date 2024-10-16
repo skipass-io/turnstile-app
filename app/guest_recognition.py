@@ -1,3 +1,5 @@
+import pickle
+
 import cv2 as cv
 import numpy as np
 from keras_facenet import FaceNet
@@ -14,6 +16,13 @@ _settings = GuestRecognitionSettings()
 
 class GuestRecognition:
     """That's how we let the guests through"""
+
+    def _load_data_for_ml(self):
+        self.svm_model = pickle.load(open(_settings.svm_model_path, "rb"))
+        self.faces_embeddings = np.load(_settings.embeddings_path)
+        Y = self.faces_embeddings["arr_1"]
+        self.label_encoder.fit(Y)
+        self.status = "loaded_data_for_ml"
 
     def _cv_img(self, color):
         match color:
@@ -87,6 +96,9 @@ class GuestRecognition:
         self.cv_gray = None
         self.face_detector = cv.CascadeClassifier(_settings.haarcascade_path)
         self.qr_decoder = pyzbar_decoder
+        self.label_encoder = LabelEncoder()
         self.facenet = FaceNet()
-        self.faces_embeddings = None
         self.svm_model = None
+        self.faces_embeddings = None
+
+        self._load_data_for_ml()
