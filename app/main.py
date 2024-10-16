@@ -23,9 +23,7 @@ guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
 def request_callback(request):
     with MappedArray(request, "main") as m:
-        guest_recognition.set_frame(mapped_array=m)
-        guest_recognition.find_qrcodes()
-        guest_recognition.find_faces()
+        guest_recognition.run(mapped_array=m)
     label_left.setText("Left side")
     label_right.setText("Right side")
     window.setStyleSheet("background-color: #ffffff;")
