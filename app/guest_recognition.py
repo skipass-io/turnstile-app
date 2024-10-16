@@ -70,12 +70,12 @@ class GuestRecognition:
         )
         self._draw_rectangles(found_faces, _settings.colors.DARK_BLUE_RGB)
 
-    def _draw_rectangles(self, objects, color_BGR=(255, 0, 0)):
+    def _draw_rectangles(self, objects, color_rgb=(255, 255, 255)):
         for obj in objects:
             if isinstance(obj, PyzbarDecoded):
                 obj = obj.rect
             x, y, w, h = obj
-            cv.rectangle(self.frame, (x, y), (x + w, y + h), color_BGR, 4)
+            cv.rectangle(self.frame, (x, y), (x + w, y + h), color_rgb, 4)
 
     def run(self, mapped_array):
         """Processing PiCamera frame"""
