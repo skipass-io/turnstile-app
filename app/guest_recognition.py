@@ -3,7 +3,7 @@ from pyzbar.pyzbar import decode as pyzbar_decoder
 from pyzbar.pyzbar import Decoded as PyzbarDecoded
 
 from config import GuestRecognitionSettings
-from exceptions import NotCorrectStatusGR
+from exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
 
 
 _settings = GuestRecognitionSettings()
@@ -12,7 +12,7 @@ _settings = GuestRecognitionSettings()
 class GuestRecognition:
     def __init__(self, frame_size):
         if (not frame_size) or (len(frame_size) != 2):
-            raise Exception("Need correct frame_size")
+            raise NotCorrectFrameSizeGR(frame_size=frame_size)
 
         self.status = None
         self.frame = None
@@ -32,7 +32,10 @@ class GuestRecognition:
     def find_qrcodes(self):
         correct_status = "set_frame"
         if not self.status == correct_status:
-            raise NotCorrectStatusGR(self.status, correct_status)
+            raise NotCorrectStatusGR(
+                current_status=self.status,
+                correct_status=correct_status,
+            )
 
         codes = self.qr_decoder(self.cv_gray)
         self._draw_rectangle(codes)
@@ -40,7 +43,10 @@ class GuestRecognition:
     def find_faces(self):
         correct_status = "set_frame"
         if not self.status == correct_status:
-            raise NotCorrectStatusGR(self.status, correct_status)
+            raise NotCorrectStatusGR(
+                current_status=self.status,
+                correct_status=correct_status,
+            )
 
         fd_settings = _settings.face_detector_settings
 
