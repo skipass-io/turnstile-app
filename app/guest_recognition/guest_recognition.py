@@ -43,9 +43,7 @@ class GuestRecognition:
         return cv.cvtColor(self.frame, cv_color)
 
     def _set_frame(self, mapped_array):
-        self._check_correct_status(
-            correct_statuses=[StatusFSM.GET_READY]
-        )  
+        self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
 
         self.frame = mapped_array.array
         self.cv_rgb = self._cv_img("rgb")
@@ -76,7 +74,7 @@ class GuestRecognition:
             ):
                 self._face_recognition(face_coords=face)
             else:
-                print("Small face")  # TODO: remove, add some business logic
+                self.status = StatusFSM.GET_CLOSER
 
     def _face_recognition(self, face_coords):
         x, y, w, h = face_coords
@@ -88,11 +86,32 @@ class GuestRecognition:
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
 
+    def _response(self):
+        status_text = self.status
+        match self.status:
+            case StatusFSM.SEARCHING:
+                status_hex = _settings.colors.BLUE_HEX
+            case StatusFSM.GET_CLOSER:
+                status_hex = _settings.colors.BLUE_HEX
+            case StatusFSM.QRCODE_SCANNING:
+                status_hex = _settings.colors.MAGENTA_HEX
+            case StatusFSM.FACE_RECOGNITION:
+                status_hex = _settings.colors.MAGENTA_HEX
+            case StatusFSM.ALLOWED:
+                status_hex = _settings.colors.GREEN_HEX
+            case StatusFSM.NOT_ALLOWED:
+                status_hex = _settings.colors.RED_HEX
+            case StatusFSM.ERROR:
+                status_hex = _settings.colors.RED_HEX
+
+        return status_text, status_hex
+
     def run(self, mapped_array):
         """Processing PiCamera frame"""
         self._set_frame(mapped_array)
         self._find_qrcodes()
         self._find_faces()
+        return self._response()
 
     def __init__(self, frame_size):
         if (not frame_size) or (len(frame_size) != 2):

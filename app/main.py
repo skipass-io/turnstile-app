@@ -19,13 +19,15 @@ PICAM2_HEIGHT = 768
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
+status_text = None
+status_hex = None
 
 def request_callback(request):
     with MappedArray(request, "main") as m:
-        guest_recognition.run(mapped_array=m)
-    label_left.setText("Left side")
+        status_text, status_hex = guest_recognition.run(mapped_array=m)
+    label_left.setText("Status:", status_text)
     label_right.setText("Right side")
-    window.setStyleSheet("background-color: #ffffff;")
+    window.setStyleSheet(f"background-color: #{status_hex};")
 
 
 def cleanup():
