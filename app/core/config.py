@@ -23,9 +23,9 @@ class FaceDetectorSettings:
 
 
 class GuestRecognitionColors:
-    # DARK_BLUE
-    DARK_BLUE_HEX = "032739"
-    DARK_BLUE_RGB = (3, 39, 57)
+    # MAGENTA
+    MAGENTA_HEX = "9400D3"
+    MAGENTA_RGB = (148, 0, 211)
     # BLUE
     BLUE_HEX = "34A9ED"
     BLUE_RBG = (52, 169, 237)
