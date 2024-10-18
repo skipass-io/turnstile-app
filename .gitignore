@@ -1,5 +1,6 @@
 embeddings/
 svm_model/
+database/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

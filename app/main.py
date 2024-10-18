@@ -9,13 +9,12 @@ from PySide2.QtWidgets import (
     QWidget,
 )
 from picamera2 import Picamera2, MappedArray
-from qgl_picam2_widget import QGlPicamera2
 
-from guest_recognition import GuestRecognition
+from guest_recognition import GuestRecognition, QGlPicamera2
 
 # TODO: target for vetical screen size 720:1280
-PICAM2_WIDTH = 720  
-PICAM2_HEIGHT = 768  
+PICAM2_WIDTH = 720
+PICAM2_HEIGHT = 768
 
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))

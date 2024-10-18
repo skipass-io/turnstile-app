@@ -7,8 +7,8 @@ from sklearn.preprocessing import LabelEncoder
 from pyzbar.pyzbar import decode as pyzbar_decoder
 from pyzbar.pyzbar import Decoded as PyzbarDecoded
 
-from config import GuestRecognitionSettings
-from exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
+from core.config import GuestRecognitionSettings
+from .exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
 
 
 _settings = GuestRecognitionSettings()

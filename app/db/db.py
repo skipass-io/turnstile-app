@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Dict, List, Tuple
 
-from config import DBSQLiteSettings
+from core.config import DBSQLiteSettings
 
 _settings = DBSQLiteSettings()
 
