@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class StatusGR(Enum):
+class StatusFSM(Enum):
     """
     Statuses for GuestRecognition (Finite-State Machine)
     ---
