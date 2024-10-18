@@ -92,7 +92,7 @@ class GuestRecognition:
         ypred = self.facenet.embeddings(face_img)
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
-        print("facenet label:", label)  # TODO: remove, collect labels
+        self.labels.append(label)
 
     def _draw_rectangles(self, objects, color_rgb=(255, 255, 255)):
         for obj in objects:
