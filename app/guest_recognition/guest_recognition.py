@@ -45,7 +45,7 @@ class GuestRecognition:
     def _set_frame(self, mapped_array):
         self._check_correct_status(
             correct_statuses=[StatusFSM.GET_READY]
-        )  # TODO: think about array of complited statuses ot smths
+        )  
 
         self.frame = mapped_array.array
         self.cv_rgb = self._cv_img("rgb")
@@ -55,9 +55,6 @@ class GuestRecognition:
         self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
 
         codes = self.qr_decoder(self.cv_gray)
-        self._draw_rectangles(
-            codes, _settings.colors.BLUE_RBG
-        )  # TODO: remove drawing for all qr_codes, replace draw for each qr_code
 
     def _find_faces(self):
         self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
@@ -72,9 +69,6 @@ class GuestRecognition:
                 int(self.height / fd_settings.scalar_detect),
             ),
         )
-        self._draw_rectangles(
-            found_faces, _settings.colors.DARK_BLUE_RGB
-        )  # TODO: remove drawing for all faces, replace draw for each face
         for face in found_faces:
             x, y, w, h = face
             if (w > (self.width / fd_settings.scalar_recognition)) & (
@@ -93,13 +87,6 @@ class GuestRecognition:
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
-
-    def _draw_rectangles(self, objects, color_rgb=(255, 255, 255)):
-        for obj in objects:
-            if isinstance(obj, PyzbarDecoded):
-                obj = obj.rect
-            x, y, w, h = obj
-            cv.rectangle(self.frame, (x, y), (x + w, y + h), color_rgb, 4)
 
     def run(self, mapped_array):
         """Processing PiCamera frame"""
