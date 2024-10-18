@@ -36,9 +36,7 @@ class GuestRecognitionColors:
     RED_RBG = (237, 69, 31)
 
 
-class GuestRecognitionSettings:
-    face_detector_settings = FaceDetectorSettings()
-    colors = GuestRecognitionColors()
+class GuestRecognitionData:
     DATA_DIR = f"{BASE_DIR}/data"
 
     haarcascade_file = "haarcascade_frontalface_default.xml"
@@ -49,3 +47,9 @@ class GuestRecognitionSettings:
 
     embeddings_file = "embeddings.npz"
     embeddings_path = f"{DATA_DIR}/embeddings/{embeddings_file}"
+
+
+class GuestRecognitionSettings:
+    face_detector_settings = FaceDetectorSettings()
+    colors = GuestRecognitionColors()
+    data = GuestRecognitionData()
