@@ -1,4 +1,3 @@
-from enum import Enum
 import pickle
 
 import cv2 as cv
@@ -10,19 +9,10 @@ from pyzbar.pyzbar import Decoded as PyzbarDecoded
 
 from core.config import GuestRecognitionSettings
 from .exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
+from .statuses import StatusGR
 
 
 _settings = GuestRecognitionSettings()
-
-
-class StatusGR(Enum):
-    GET_READY = "get_ready"
-    NOT_READY = "not_ready"
-    ERROR = "error"
-    SEARCHING = "searching"
-    PROCESSING = "processing"
-    ALLOWED = "allowed"
-    NOT_ALLOWED = "not_allowed"
 
 
 class GuestRecognition:
