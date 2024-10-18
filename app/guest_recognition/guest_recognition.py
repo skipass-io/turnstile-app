@@ -17,6 +17,7 @@ _settings = GuestRecognitionSettings()
 
 class StatusGR(Enum):
     GET_READY = "get_ready"
+    NOT_READY = "not_ready"
     ERROR = "error"
     SEARCHING = "searching"
     PROCESSING = "processing"
@@ -35,11 +36,11 @@ class GuestRecognition:
             )
 
     def _load_data_for_ml(self):
-        self.svm_model = pickle.load(open(_settings.svm_model_path, "rb"))
-        self.faces_embeddings = np.load(_settings.embeddings_path)
+        self.svm_model = pickle.load(open(_settings.data.svm_model_path, "rb"))
+        self.faces_embeddings = np.load(_settings.data.embeddings_path)
         Y = self.faces_embeddings["arr_1"]
         self.label_encoder.fit(Y)
-        self.status = "loaded_data_for_ml"
+        self.status = StatusGR.GET_READY
 
     def _cv_img(self, color):
         match color:
@@ -53,16 +54,15 @@ class GuestRecognition:
 
     def _set_frame(self, mapped_array):
         self._check_correct_status(
-            correct_statuses=["set_frame", "loaded_data_for_ml"]
+            correct_statuses=[StatusGR.GET_READY]
         )  # TODO: think about array of complited statuses ot smths
 
         self.frame = mapped_array.array
         self.cv_rgb = self._cv_img("rgb")
         self.cv_gray = self._cv_img("gray")
-        self.status = "set_frame"
 
     def _find_qrcodes(self):
-        self._check_correct_status(correct_statuses=["set_frame"])
+        self._check_correct_status(correct_statuses=[StatusGR.GET_READY])
 
         codes = self.qr_decoder(self.cv_gray)
         self._draw_rectangles(
@@ -70,7 +70,7 @@ class GuestRecognition:
         )  # TODO: remove drawing for all qr_codes, replace draw for each qr_code
 
     def _find_faces(self):
-        self._check_correct_status(correct_statuses=["set_frame"])
+        self._check_correct_status(correct_statuses=[StatusGR.GET_READY])
         fd_settings = _settings.face_detector_settings
 
         found_faces = self.face_detector.detectMultiScale(
@@ -122,12 +122,13 @@ class GuestRecognition:
             raise NotCorrectFrameSizeGR(frame_size=frame_size)
 
         self.status = None
+        self.labels = []
         self.frame = None
         self.width = frame_size[0]
         self.height = frame_size[1]
         self.cv_rgb = None
         self.cv_gray = None
-        self.face_detector = cv.CascadeClassifier(_settings.haarcascade_path)
+        self.face_detector = cv.CascadeClassifier(_settings.data.haarcascade_path)
         self.qr_decoder = pyzbar_decoder
         self.label_encoder = LabelEncoder()
         self.facenet = FaceNet()
