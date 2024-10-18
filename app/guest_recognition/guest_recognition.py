@@ -1,3 +1,4 @@
+from enum import Enum
 import pickle
 
 import cv2 as cv
@@ -12,6 +13,15 @@ from .exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
 
 
 _settings = GuestRecognitionSettings()
+
+
+class StatusGR(Enum):
+    GET_READY = "get_ready"
+    ERROR = "error"
+    SEARCHING = "searching"
+    PROCESSING = "processing"
+    ALLOWED = "allowed"
+    NOT_ALLOWED = "not_allowed"
 
 
 class GuestRecognition:
