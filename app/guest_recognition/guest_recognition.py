@@ -68,8 +68,8 @@ class GuestRecognition:
             scaleFactor=fd_settings.scale_factor,
             minNeighbors=fd_settings.min_neighbors,
             minSize=(
-                int(self.width / fd_settings.scalar_face_detect),
-                int(self.height / fd_settings.scalar_face_detect),
+                int(self.width / fd_settings.scalar_detect),
+                int(self.height / fd_settings.scalar_detect),
             ),
         )
         self._draw_rectangles(
@@ -77,10 +77,10 @@ class GuestRecognition:
         )  # TODO: remove drawing for all faces, replace draw for each face
         for face in found_faces:
             x, y, w, h = face
-            if (w > (self.width / 2)) & (h > (self.height / 2)):
-                self._face_recognition(
-                    face_coords=face
-                )  # TODO: instead "2" - scalar_face_recognition in _settings
+            if (w > (self.width / fd_settings.scalar_recognition)) & (
+                h > (self.height / fd_settings.scalar_recognition)
+            ):
+                self._face_recognition(face_coords=face)
             else:
                 print("Small face")  # TODO: remove, add some business logic
 
