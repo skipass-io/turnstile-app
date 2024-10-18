@@ -9,7 +9,7 @@ from pyzbar.pyzbar import Decoded as PyzbarDecoded
 
 from core.config import GuestRecognitionSettings
 from .exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
-from .statuses import StatusGR
+from .status_fsm import StatusFSM
 
 
 _settings = GuestRecognitionSettings()
@@ -30,7 +30,7 @@ class GuestRecognition:
         self.faces_embeddings = np.load(_settings.data.embeddings_path)
         Y = self.faces_embeddings["arr_1"]
         self.label_encoder.fit(Y)
-        self.status = StatusGR.GET_READY
+        self.status = StatusFSM.GET_READY
 
     def _cv_img(self, color):
         match color:
@@ -44,7 +44,7 @@ class GuestRecognition:
 
     def _set_frame(self, mapped_array):
         self._check_correct_status(
-            correct_statuses=[StatusGR.GET_READY]
+            correct_statuses=[StatusFSM.GET_READY]
         )  # TODO: think about array of complited statuses ot smths
 
         self.frame = mapped_array.array
@@ -52,7 +52,7 @@ class GuestRecognition:
         self.cv_gray = self._cv_img("gray")
 
     def _find_qrcodes(self):
-        self._check_correct_status(correct_statuses=[StatusGR.GET_READY])
+        self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
 
         codes = self.qr_decoder(self.cv_gray)
         self._draw_rectangles(
@@ -60,7 +60,7 @@ class GuestRecognition:
         )  # TODO: remove drawing for all qr_codes, replace draw for each qr_code
 
     def _find_faces(self):
-        self._check_correct_status(correct_statuses=[StatusGR.GET_READY])
+        self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         fd_settings = _settings.face_detector_settings
 
         found_faces = self.face_detector.detectMultiScale(
