@@ -103,9 +103,17 @@ class GuestRecognition:
         self.labels.append(label)
         print("labels append:", label)
 
+    def _most_frequent_label(self):
+        if len(self.labels) > 15:  # TODO: instead "15" - in settings or smth params
+            frequent_label = max(set(self.labels), key=self.labels.count)
+            return (
+                frequent_label if self.labels.count(frequent_label) > 13 else None
+            )  # TODO: instead "13" - in settings or smth params
+        
+
     def _processing(self):
         status_text = self.status
-        label_text = None  # TODO: find label text and to output on screen
+        label_text = self._most_frequent_label()
         match self.status:
             case StatusFSM.SEARCHING:
                 status_hex = _settings.colors.BLUE_HEX
