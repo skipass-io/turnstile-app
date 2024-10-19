@@ -14,7 +14,7 @@ from guest_recognition import GuestRecognition, QGlPicamera2
 
 # TODO: target for vetical screen size 720:1280
 PICAM2_WIDTH = 720
-PICAM2_HEIGHT = 768
+PICAM2_HEIGHT = 1280
 
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
@@ -22,11 +22,12 @@ guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 status_text = None
 status_hex = None
 
+
 def request_callback(request):
     with MappedArray(request, "main") as m:
-        status_text, status_hex = guest_recognition.run(mapped_array=m)
-    label_left.setText("Status:", status_text)
-    label_right.setText("Right side")
+        status_text, label_text, status_hex = guest_recognition.run(mapped_array=m)
+    label_top.setText("Status:", status_text)
+    label_bottom.setText("Label:", label_text)
     window.setStyleSheet(f"background-color: #{status_hex};")
 
 
@@ -49,26 +50,28 @@ qpicamera2 = QGlPicamera2(
     bg_colour=(255, 255, 255),
     keep_ar=False,
 )
-label_left = QLabel()
-label_right = QLabel()
+label_top = QLabel()
+label_bottom = QLabel()
 window = QWidget()
-window.setWindowTitle("Qt Picamera2 App")
+window.setWindowTitle("turnstile-app")
 window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
 
 
-label_left.setFixedWidth(323)
-label_right.setFixedWidth(323)
-label_left.setAlignment(QtCore.Qt.AlignTop)
-label_right.setAlignment(QtCore.Qt.AlignTop)
+label_top.setFixedHeight(50)
+label_bottom.setFixedHeight(50)
+label_top.setAlignment(QtCore.Qt.AlignTop)
+label_bottom.setAlignment(QtCore.Qt.AlignTop)
 
 
-layout_h = QHBoxLayout()
-layout_h.addWidget(label_left)
-layout_h.addWidget(qpicamera2)
-layout_h.addWidget(label_right)
-window.setLayout(layout_h)
+layout_v = QVBoxLayout()
+layout_v.addWidget(label_top)
+layout_v.addWidget(qpicamera2)
+layout_v.addWidget(label_bottom)
+window.setLayout(layout_v)
 window.showFullScreen()
 
+
+# screen info
 screen = app.primaryScreen()
 print("Screen: %s" % screen.name())
 size = screen.size()
