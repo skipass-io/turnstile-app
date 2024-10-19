@@ -13,22 +13,21 @@ from picamera2 import Picamera2, MappedArray
 from guest_recognition import GuestRecognition, QGlPicamera2
 
 # TODO: target for vetical screen size 720:1280
-PICAM2_WIDTH = 720
-PICAM2_HEIGHT = 1280
+PICAM2_WIDTH = 1280  # 720
+PICAM2_HEIGHT = 720  # 1280
 
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
-status_text = None
-status_hex = None
-
 
 def request_callback(request):
     with MappedArray(request, "main") as m:
-        status_text, label_text, status_hex = guest_recognition.run(mapped_array=m)
-    label_top.setText("Status:", status_text)
-    label_bottom.setText("Label:", label_text)
-    window.setStyleSheet(f"background-color: #{status_hex};")
+        gr_status_text, gr_label_text, gr_status_hex = guest_recognition.run(
+            mapped_array=m
+        )
+    label_top.setText(f"Status: {gr_status_text}")
+    label_bottom.setText(f"Label: {gr_label_text}")
+    window.setStyleSheet(f"background-color: #{gr_status_hex};")
 
 
 def cleanup():
