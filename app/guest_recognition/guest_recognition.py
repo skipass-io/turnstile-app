@@ -66,7 +66,9 @@ class GuestRecognition:
                 ),
                 qr_codes,
             )
-        self.labels.append(qr_code.data.decode("utf-8"))
+        label = qr_code.data.decode("utf-8")
+        self.labels.append(label)
+        print("labels append:", label)
 
     def _find_faces(self):
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
@@ -99,6 +101,7 @@ class GuestRecognition:
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
+        print("labels append:", label)
 
     def _processing(self):
         status_text = self.status
