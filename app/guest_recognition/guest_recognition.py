@@ -1,4 +1,5 @@
 import pickle
+import functools
 
 import cv2 as cv
 import numpy as np
@@ -30,7 +31,7 @@ class GuestRecognition:
         self.faces_embeddings = np.load(_settings.data.embeddings_path)
         Y = self.faces_embeddings["arr_1"]
         self.label_encoder.fit(Y)
-        self.status = StatusFSM.GET_READY
+        self.status = StatusFSM.SEARCHING
 
     def _cv_img(self, color):
         match color:
@@ -43,19 +44,32 @@ class GuestRecognition:
         return cv.cvtColor(self.frame, cv_color)
 
     def _set_frame(self, mapped_array):
-        self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
+        # self._check_correct_status(correct_statuses=[StatusFSM.SEARCHING, ])
 
         self.frame = mapped_array.array
         self.cv_rgb = self._cv_img("rgb")
         self.cv_gray = self._cv_img("gray")
 
-    def _find_qrcodes(self):
-        self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
-
-        codes = self.qr_decoder(self.cv_gray)
+    def _find_qrcode(self):
+        # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
+        qr_codes = [qr for qr in self.qr_decoder(self.cv_gray) if qr.type == "QRCODE"]
+        if len(qr_codes) == 0:
+            return
+        elif len(qr_codes) == 1:
+            qr_code = qr_codes[0]
+        else:
+            qr_code = functools.reduce(
+                lambda qr_a, qr_b: (
+                    qr_a
+                    if (qr_a.rect[2] + qr_a.rect[3]) > (qr_b.rect[2] + qr_b.rect[3])
+                    else qr_b
+                ),
+                qr_codes,
+            )
+        self.labels.append(qr_code.data.decode("utf-8"))
 
     def _find_faces(self):
-        self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
+        # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         fd_settings = _settings.face_detector_settings
 
         found_faces = self.face_detector.detectMultiScale(
@@ -86,8 +100,9 @@ class GuestRecognition:
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
 
-    def _response(self):
+    def _processing(self):
         status_text = self.status
+        label_text = None  # TODO: find label text and to output on screen
         match self.status:
             case StatusFSM.SEARCHING:
                 status_hex = _settings.colors.BLUE_HEX
@@ -104,14 +119,14 @@ class GuestRecognition:
             case StatusFSM.ERROR:
                 status_hex = _settings.colors.RED_HEX
 
-        return status_text, status_hex
+        return status_text, label_text, status_hex
 
     def run(self, mapped_array):
         """Processing PiCamera frame"""
         self._set_frame(mapped_array)
-        self._find_qrcodes()
+        self._find_qrcode()
         self._find_faces()
-        return self._response()
+        return self._processing()
 
     def __init__(self, frame_size):
         if (not frame_size) or (len(frame_size) != 2):
