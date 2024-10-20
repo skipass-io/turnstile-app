@@ -1,5 +1,5 @@
-embeddings/
-svm_model/
+# embeddings/
+# svm_model/
 database/
 
 # Byte-compiled / optimized / DLL files
