@@ -71,6 +71,7 @@ class GuestRecognition:
         print("labels append:", label)
 
     def _find_faces(self):
+        if self.status == StatusFSM.ALLOWED: return
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         fd_settings = _settings.face_detector_settings
 
@@ -89,6 +90,7 @@ class GuestRecognition:
                 h > (self.height / fd_settings.scalar_recognition)
             ):
                 self._face_recognition(face_coords=face)
+                self.status = StatusFSM.FACE_RECOGNITION
             else:
                 self.status = StatusFSM.GET_CLOSER
 
@@ -104,31 +106,34 @@ class GuestRecognition:
         print("labels append:", label)
 
     def _most_frequent_label(self):
-        if len(self.labels) > 15:  # TODO: instead "15" - in settings or smth params
+        if len(self.labels) >= 15:  # TODO: instead "15" - in settings or smth params
             frequent_label = max(set(self.labels), key=self.labels.count)
-            return (
-                frequent_label if self.labels.count(frequent_label) > 13 else None
+            self.guest_label = (
+                frequent_label if self.labels.count(frequent_label) >= 13 else None
             )  # TODO: instead "13" - in settings or smth params
-        
+            if (self.guest_label):
+                self.status = StatusFSM.ALLOWED
 
     def _processing(self):
-        status_text = self.status
-        label_text = self._most_frequent_label()
         match self.status:
             case StatusFSM.SEARCHING:
                 status_hex = _settings.colors.BLUE_HEX
             case StatusFSM.GET_CLOSER:
                 status_hex = _settings.colors.BLUE_HEX
-            case StatusFSM.QRCODE_SCANNING:
-                status_hex = _settings.colors.MAGENTA_HEX
+            # case StatusFSM.QRCODE_SCANNING:
+            #     status_hex = _settings.colors.MAGENTA_HEX
             case StatusFSM.FACE_RECOGNITION:
+                self._most_frequent_label()
                 status_hex = _settings.colors.MAGENTA_HEX
             case StatusFSM.ALLOWED:
                 status_hex = _settings.colors.GREEN_HEX
-            case StatusFSM.NOT_ALLOWED:
-                status_hex = _settings.colors.RED_HEX
-            case StatusFSM.ERROR:
-                status_hex = _settings.colors.RED_HEX
+            # case StatusFSM.NOT_ALLOWED:
+            #     status_hex = _settings.colors.RED_HEX
+            # case StatusFSM.ERROR:
+            #     status_hex = _settings.colors.RED_HEX
+        
+        status_text = self.status
+        label_text = self.guest_label
 
         return status_text, label_text, status_hex
 
@@ -144,6 +149,7 @@ class GuestRecognition:
             raise NotCorrectFrameSizeGR(frame_size=frame_size)
 
         self.status = None
+        self.guest_label = None
         self.labels = []
         self.frame = None
         self.width = frame_size[0]
