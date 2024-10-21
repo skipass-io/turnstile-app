@@ -1,33 +1,14 @@
 import time
-
-import RPi.GPIO as GPIO
+from gpiozero import LED
 
 
 class TurnstileGPIO:
-    def _setup(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.channel_gate, GPIO.OUT)
-        time.sleep(self.sleep_time)
-
-    def _cleanup(self):
-        time.sleep(self.sleep_time)
-        GPIO.cleanup()
-
-    def _connect_to_relay(self):
-        GPIO.output(self.channel_gate, GPIO.HIGH)
-
-    def _disconnect_to_relay(self):
-        GPIO.output(self.channel_gate, GPIO.LOW)
-
-    def open_gate(self):
-       
-        self._connect_to_relay()
-
-    def close_gate(self):
-        self._disconnect_to_relay()
-        self._cleanup()
 
     def __init__(self):
-        self.channel_gate = 21
-        self.sleep_time = 1
-        self._setup()
+        self.channel_1 = LED("GPIO9")
+
+    def open_gate(self):
+        self.channel_1.on()
+
+    def close_gate(self):
+        self.channel_1.off()
