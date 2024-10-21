@@ -1,7 +1,7 @@
 import sys
 
 from PySide2 import QtCore
-from PySide2.QtGui import QFontDatabase  # , QFont
+from PySide2.QtGui import QFontDatabase, QFont
 from PySide2.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -43,6 +43,9 @@ picam2.configure(
     picam2.create_preview_configuration(main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)})
 )
 app = QApplication(sys.argv)
+font_id = QFontDatabase.addApplicationFont(app_settings.font_path)
+font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
+font = QFont(font_name, 30)
 
 
 qpicamera2 = QGlPicamera2(
@@ -54,6 +57,10 @@ qpicamera2 = QGlPicamera2(
 )
 label_top = QLabel()
 label_bottom = QLabel()
+label_top.setFont(font)
+label_bottom.setFont(font)
+label_top.setStyleSheet("color: #fff;")
+label_bottom.setStyleSheet("color: #fff;")
 window = QWidget()
 window.setWindowTitle("turnstile-app")
 window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -61,8 +68,8 @@ window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
 
 label_top.setFixedHeight(50)
 label_bottom.setFixedHeight(50)
-label_top.setAlignment(QtCore.Qt.AlignTop)
-label_bottom.setAlignment(QtCore.Qt.AlignTop)
+label_top.setAlignment(QtCore.Qt.AlignCenter)
+label_bottom.setAlignment(QtCore.Qt.AlignCenter)
 
 
 layout_v = QVBoxLayout()
