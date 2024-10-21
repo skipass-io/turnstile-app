@@ -29,5 +29,5 @@ class TurnstileGPIO:
 
     def __init__(self):
         self.channel_gate = 21
-        self.sleep_time = 0.2
+        self.sleep_time = 1
         self._setup()
