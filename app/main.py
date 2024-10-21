@@ -1,6 +1,7 @@
 import sys
 
 from PySide2 import QtCore
+from PySide2.QtGui import QFontDatabase  # , QFont
 from PySide2.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -10,12 +11,14 @@ from PySide2.QtWidgets import (
 )
 from picamera2 import Picamera2, MappedArray
 
+from core.config import AppSettings
 from guest_recognition import GuestRecognition, QGlPicamera2
 
-# TODO: target for vetical screen size 720:1280
-PICAM2_WIDTH = 1280  # 720
-PICAM2_HEIGHT = 595  # 1280
 
+app_settings = AppSettings()
+
+
+PICAM2_WIDTH, PICAM2_HEIGHT = app_settings.picam2_horizontal_size
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
