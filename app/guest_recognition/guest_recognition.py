@@ -54,10 +54,6 @@ class GuestRecognition:
     def _find_qrcode(self):
         if self.status == StatusFSM.ALLOWED:
             return
-        if (self.status == StatusFSM.GET_CLOSER) or (
-            self.status == StatusFSM.GET_CLOSER
-        ):
-            self._reset_guest_recognition()
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         qr_codes = [qr for qr in self.qr_decoder(self.cv_gray) if qr.type == "QRCODE"]
         if len(qr_codes) == 0:
@@ -73,6 +69,10 @@ class GuestRecognition:
                 ),
                 qr_codes,
             )
+        if (self.status == StatusFSM.FACE_RECOGNITION) or (
+            self.status == StatusFSM.GET_CLOSER
+        ):
+            self._reset_guest_recognition()
         label = qr_code.data.decode("utf-8")
         self.labels.append(label)
         self.status = StatusFSM.QRCODE_SCANNING
@@ -92,6 +92,10 @@ class GuestRecognition:
                 int(self.height / fd_settings.scalar_detect),
             ),
         )
+        if (len(found_faces) == 0) and (self.status != StatusFSM.QRCODE_SCANNING):
+            self.status = StatusFSM.SEARCHING
+            return
+
         for face in found_faces:
             x, y, w, h = face
             if (w > (self.width / fd_settings.scalar_recognition)) & (
@@ -101,7 +105,6 @@ class GuestRecognition:
                 self.status = StatusFSM.FACE_RECOGNITION
             else:
                 self.status = StatusFSM.GET_CLOSER
-                self._reset_guest_recognition()
 
     def _face_recognition(self, face_coords):
         x, y, w, h = face_coords
@@ -143,7 +146,7 @@ class GuestRecognition:
     def _processing(self):
         match self.status:
             case StatusFSM.SEARCHING:
-                status_hex = _settings.colors.BLUE_HEX
+                status_hex = _settings.colors.LIGHT_BLUE_HEX
             case StatusFSM.GET_CLOSER:
                 status_hex = _settings.colors.BLUE_HEX
             case StatusFSM.QRCODE_SCANNING:
@@ -159,9 +162,16 @@ class GuestRecognition:
             #     status_hex = _settings.colors.RED_HEX
             # case StatusFSM.ERROR:
             #     status_hex = _settings.colors.RED_HEX
+        current_time = time.localtime()
+        hours = current_time.tm_hour
+        minutes = current_time.tm_min
 
-        status_text = self.status
-        label_text = self.guest_label
+        status_text = self.status.value.upper()
+        label_text = (
+            f"Welcome {self.guest_label}!"
+            if self.guest_label
+            else f"{hours}:{minutes:02d}"
+        )
 
         return status_text, label_text, status_hex
 
