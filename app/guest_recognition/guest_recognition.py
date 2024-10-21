@@ -166,14 +166,14 @@ class GuestRecognition:
         hours = current_time.tm_hour
         minutes = current_time.tm_min
 
-        status_text = self.status.value.upper()
-        label_text = (
+        text_top = self.status.value.upper()
+        text_bottom = (
             f"Welcome {self.guest_label}!"
             if self.guest_label
             else f"{hours}:{minutes:02d}"
         )
 
-        return status_text, label_text, status_hex
+        return text_top, text_bottom, status_hex
 
     def run(self, mapped_array):
         """Processing PiCamera frame"""
