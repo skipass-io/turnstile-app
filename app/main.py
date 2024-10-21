@@ -14,7 +14,7 @@ from guest_recognition import GuestRecognition, QGlPicamera2
 
 # TODO: target for vetical screen size 720:1280
 PICAM2_WIDTH = 1280  # 720
-PICAM2_HEIGHT = 720  # 1280
+PICAM2_HEIGHT = 595  # 1280
 
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
