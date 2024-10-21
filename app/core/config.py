@@ -36,6 +36,9 @@ class GuestRecognitionColors:
     # MAGENTA
     MAGENTA_HEX = "9400D3"
     MAGENTA_RGB = (148, 0, 211)
+    #LIGHT_BLUE
+    LIGHT_BLUE_HEX = "ADDBF6"
+    LIGHT_BLUE_RGB = (202, 80, 82)
     # BLUE
     BLUE_HEX = "34A9ED"
     BLUE_RBG = (52, 169, 237)
