@@ -28,8 +28,8 @@ def request_callback(request):
         gr_status_text, gr_label_text, gr_status_hex = guest_recognition.run(
             mapped_array=m
         )
-    label_top.setText(f"Status: {gr_status_text}")
-    label_bottom.setText(f"Label: {gr_label_text}")
+    label_top.setText(gr_status_text)
+    label_bottom.setText(gr_label_text)
     window.setStyleSheet(f"background-color: #{gr_status_hex};")
 
 
