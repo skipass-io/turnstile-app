@@ -52,6 +52,8 @@ class GuestRecognition:
         self.cv_gray = self._cv_img("gray")
 
     def _find_qrcode(self):
+        if self.status == StatusFSM.ALLOWED:
+            return
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         qr_codes = [qr for qr in self.qr_decoder(self.cv_gray) if qr.type == "QRCODE"]
         if len(qr_codes) == 0:
