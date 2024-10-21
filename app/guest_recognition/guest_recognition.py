@@ -54,6 +54,8 @@ class GuestRecognition:
     def _find_qrcode(self):
         if self.status == StatusFSM.ALLOWED:
             return
+        if self.status == StatusFSM.GET_CLOSER | self.status== StatusFSM.GET_CLOSER:
+            self._reset_guest_recognition()
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         qr_codes = [qr for qr in self.qr_decoder(self.cv_gray) if qr.type == "QRCODE"]
         if len(qr_codes) == 0:
@@ -97,6 +99,7 @@ class GuestRecognition:
                 self.status = StatusFSM.FACE_RECOGNITION
             else:
                 self.status = StatusFSM.GET_CLOSER
+                self._reset_guest_recognition()
 
     def _face_recognition(self, face_coords):
         x, y, w, h = face_coords
@@ -127,10 +130,13 @@ class GuestRecognition:
         if (
             checking_time >= 10
         ):  # TODO: instead `10` second - diffrent value from `_settings`
-            self.status = StatusFSM.SEARCHING
-            self.labels = []
-            self.guest_label = None
-            self.start_time_allowed = None
+            self._reset_guest_recognition()
+
+    def _reset_guest_recognition(self):
+        self.status = StatusFSM.SEARCHING
+        self.labels = []
+        self.guest_label = None
+        self.start_time_allowed = None
 
     def _processing(self):
         match self.status:
