@@ -13,7 +13,7 @@ class AppSettings:
     picam2_vertical_size = (595, 1280)
     picam2_horizontal_size = (1280, 595)
     # Font Settings
-    font_name = "Poppins-Regular.ttf"
+    font_name = "Poppins-SemiBold.ttf"
     font_path = f"{BASE_DIR}/app/assets/fonts/{font_name}"
 
 
