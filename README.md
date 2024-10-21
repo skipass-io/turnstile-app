@@ -6,6 +6,7 @@ This application provides the ability to check frames from a video stream and va
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Run](#run)
 
 ## Prerequisites
 
@@ -23,7 +24,8 @@ Follow these steps to set up the project on your Raspberry Pi:
 First, update your Raspberry Pi OS to ensure all packages are up-to-date:
 
 ```bash
-sudo apt update && sudo apt upgrade -y
+sudo apt update
+sudo apt full-upgrade
 ```
 
 ### Step 2: Install Required Packages for Raspberry Pi Camera `picamera2`, `PySide2` and `pyzbar`
@@ -70,7 +72,7 @@ Use Poetry to install all the required dependencies listed in your pyproject.tom
 poetry install
 ```
 
-### Step 6: Run app
+## Run `turnstile-app`
 
 ```
 python ./app/main.py
