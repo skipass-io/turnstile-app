@@ -1,5 +1,6 @@
 import pickle
 import functools
+import time
 
 import cv2 as cv
 import numpy as np
@@ -68,10 +69,11 @@ class GuestRecognition:
             )
         label = qr_code.data.decode("utf-8")
         self.labels.append(label)
-        print("labels append:", label)
+        self.status = StatusFSM.QRCODE_SCANNING
 
     def _find_faces(self):
-        if self.status == StatusFSM.ALLOWED: return
+        if self.status == StatusFSM.ALLOWED:
+            return
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         fd_settings = _settings.face_detector_settings
 
@@ -103,7 +105,6 @@ class GuestRecognition:
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
-        print("labels append:", label)
 
     def _most_frequent_label(self):
         if len(self.labels) >= 15:  # TODO: instead "15" - in settings or smth params
@@ -111,8 +112,23 @@ class GuestRecognition:
             self.guest_label = (
                 frequent_label if self.labels.count(frequent_label) >= 13 else None
             )  # TODO: instead "13" - in settings or smth params
-            if (self.guest_label):
-                self.status = StatusFSM.ALLOWED
+
+            if self.guest_label:
+                self.status = StatusFSM.ALLOWED  # TODO: ask DB for allowed or not
+
+    def _checking_time_allowed(self):
+        if not self.start_time_allowed:
+            self.start_time_allowed = time.time()
+            return
+
+        checking_time = time.time() - self.start_time_allowed
+        if (
+            checking_time >= 10
+        ):  # TODO: instead `10` second - diffrent value from `_settings`
+            self.status = StatusFSM.SEARCHING
+            self.labels = []
+            self.guest_label = None
+            self.start_time_allowed = None
 
     def _processing(self):
         match self.status:
@@ -120,18 +136,20 @@ class GuestRecognition:
                 status_hex = _settings.colors.BLUE_HEX
             case StatusFSM.GET_CLOSER:
                 status_hex = _settings.colors.BLUE_HEX
-            # case StatusFSM.QRCODE_SCANNING:
-            #     status_hex = _settings.colors.MAGENTA_HEX
+            case StatusFSM.QRCODE_SCANNING:
+                self._most_frequent_label()
+                status_hex = _settings.colors.MAGENTA_HEX
             case StatusFSM.FACE_RECOGNITION:
                 self._most_frequent_label()
                 status_hex = _settings.colors.MAGENTA_HEX
             case StatusFSM.ALLOWED:
+                self._checking_time_allowed()
                 status_hex = _settings.colors.GREEN_HEX
             # case StatusFSM.NOT_ALLOWED:
             #     status_hex = _settings.colors.RED_HEX
             # case StatusFSM.ERROR:
             #     status_hex = _settings.colors.RED_HEX
-        
+
         status_text = self.status
         label_text = self.guest_label
 
@@ -150,6 +168,7 @@ class GuestRecognition:
 
         self.status = None
         self.guest_label = None
+        self.start_time_allowed = None
         self.labels = []
         self.frame = None
         self.width = frame_size[0]
