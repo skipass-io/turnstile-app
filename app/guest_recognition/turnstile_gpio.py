@@ -13,19 +13,20 @@ class TurnstileGPIO:
         time.sleep(self.sleep_time)
         GPIO.cleanup()
 
-
     def _connect_to_relay(self):
         GPIO.output(self.channel_gate, GPIO.HIGH)
-        time.sleep(self.sleep_time)
-        time.sleep(self.sleep_time)
-        GPIO.output(self.channel_gate, GPIO.LOW)        
 
+    def _disconnect_to_relay(self):
+        GPIO.output(self.channel_gate, GPIO.LOW)
 
     def open_gate(self):
-        self._setup()        
+        self._setup()
         self._connect_to_relay()
+
+    def close_gate(self):
+        self._disconnect_to_relay()
         self._cleanup()
-        
+
     def __init__(self):
         self.channel_gate = 21
-        self.sleep_time = 0.25
+        self.sleep_time = 0.2
