@@ -1,6 +1,7 @@
 import sys
 
 from PySide2 import QtCore
+from PySide2.QtGui import QFontDatabase, QFont
 from PySide2.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -10,12 +11,14 @@ from PySide2.QtWidgets import (
 )
 from picamera2 import Picamera2, MappedArray
 
+from core.config import AppSettings
 from guest_recognition import GuestRecognition, QGlPicamera2
 
-# TODO: target for vetical screen size 720:1280
-PICAM2_WIDTH = 1280  # 720
-PICAM2_HEIGHT = 720  # 1280
 
+app_settings = AppSettings()
+
+
+PICAM2_WIDTH, PICAM2_HEIGHT = app_settings.picam2_horizontal_size
 
 guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
@@ -25,8 +28,8 @@ def request_callback(request):
         gr_status_text, gr_label_text, gr_status_hex = guest_recognition.run(
             mapped_array=m
         )
-    label_top.setText(f"Status: {gr_status_text}")
-    label_bottom.setText(f"Label: {gr_label_text}")
+    label_top.setText(gr_status_text)
+    label_bottom.setText(gr_label_text)
     window.setStyleSheet(f"background-color: #{gr_status_hex};")
 
 
@@ -40,6 +43,9 @@ picam2.configure(
     picam2.create_preview_configuration(main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)})
 )
 app = QApplication(sys.argv)
+font_id = QFontDatabase.addApplicationFont(app_settings.font_path)
+font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
+font = QFont(font_name, 30)
 
 
 qpicamera2 = QGlPicamera2(
@@ -51,6 +57,10 @@ qpicamera2 = QGlPicamera2(
 )
 label_top = QLabel()
 label_bottom = QLabel()
+label_top.setFont(font)
+label_bottom.setFont(font)
+label_top.setStyleSheet("color: #fff;")
+label_bottom.setStyleSheet("color: #fff;")
 window = QWidget()
 window.setWindowTitle("turnstile-app")
 window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -58,8 +68,8 @@ window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
 
 label_top.setFixedHeight(50)
 label_bottom.setFixedHeight(50)
-label_top.setAlignment(QtCore.Qt.AlignTop)
-label_bottom.setAlignment(QtCore.Qt.AlignTop)
+label_top.setAlignment(QtCore.Qt.AlignCenter)
+label_bottom.setAlignment(QtCore.Qt.AlignCenter)
 
 
 layout_v = QVBoxLayout()

@@ -17,6 +17,7 @@ class TurnstileGPIO:
     def _connect_to_relay(self):
         GPIO.output(self.channel_gate, GPIO.HIGH)
         time.sleep(self.sleep_time)
+        time.sleep(self.sleep_time)
         GPIO.output(self.channel_gate, GPIO.LOW)        
 
 

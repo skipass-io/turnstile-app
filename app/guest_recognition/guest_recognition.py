@@ -1,5 +1,6 @@
 import pickle
 import functools
+import time
 
 import cv2 as cv
 import numpy as np
@@ -51,6 +52,8 @@ class GuestRecognition:
         self.cv_gray = self._cv_img("gray")
 
     def _find_qrcode(self):
+        if self.status == StatusFSM.ALLOWED:
+            return
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         qr_codes = [qr for qr in self.qr_decoder(self.cv_gray) if qr.type == "QRCODE"]
         if len(qr_codes) == 0:
@@ -66,11 +69,17 @@ class GuestRecognition:
                 ),
                 qr_codes,
             )
+        if (self.status == StatusFSM.FACE_RECOGNITION) or (
+            self.status == StatusFSM.GET_CLOSER
+        ):
+            self._reset_guest_recognition()
         label = qr_code.data.decode("utf-8")
         self.labels.append(label)
-        print("labels append:", label)
+        self.status = StatusFSM.QRCODE_SCANNING
 
     def _find_faces(self):
+        if self.status == StatusFSM.ALLOWED:
+            return
         # self._check_correct_status(correct_statuses=[StatusFSM.GET_READY])
         fd_settings = _settings.face_detector_settings
 
@@ -83,12 +92,17 @@ class GuestRecognition:
                 int(self.height / fd_settings.scalar_detect),
             ),
         )
+        if (len(found_faces) == 0) and (self.status != StatusFSM.QRCODE_SCANNING):
+            self.status = StatusFSM.SEARCHING
+            return
+
         for face in found_faces:
             x, y, w, h = face
             if (w > (self.width / fd_settings.scalar_recognition)) & (
                 h > (self.height / fd_settings.scalar_recognition)
             ):
                 self._face_recognition(face_coords=face)
+                self.status = StatusFSM.FACE_RECOGNITION
             else:
                 self.status = StatusFSM.GET_CLOSER
 
@@ -101,34 +115,63 @@ class GuestRecognition:
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
-        print("labels append:", label)
 
     def _most_frequent_label(self):
-        if len(self.labels) > 15:  # TODO: instead "15" - in settings or smth params
+        if len(self.labels) >= 15:  # TODO: instead "15" - in settings or smth params
             frequent_label = max(set(self.labels), key=self.labels.count)
-            return (
-                frequent_label if self.labels.count(frequent_label) > 13 else None
+            self.guest_label = (
+                frequent_label if self.labels.count(frequent_label) >= 13 else None
             )  # TODO: instead "13" - in settings or smth params
-        
+
+            if self.guest_label:
+                self.status = StatusFSM.ALLOWED  # TODO: ask DB for allowed or not
+
+    def _checking_time_allowed(self):
+        if not self.start_time_allowed:
+            self.start_time_allowed = time.time()
+            return
+
+        checking_time = time.time() - self.start_time_allowed
+        if (
+            checking_time >= 10
+        ):  # TODO: instead `10` second - diffrent value from `_settings`
+            self._reset_guest_recognition()
+
+    def _reset_guest_recognition(self):
+        self.status = StatusFSM.SEARCHING
+        self.labels = []
+        self.guest_label = None
+        self.start_time_allowed = None
 
     def _processing(self):
-        status_text = self.status
-        label_text = self._most_frequent_label()
         match self.status:
             case StatusFSM.SEARCHING:
-                status_hex = _settings.colors.BLUE_HEX
+                status_hex = _settings.colors.LIGHT_BLUE_HEX
             case StatusFSM.GET_CLOSER:
                 status_hex = _settings.colors.BLUE_HEX
             case StatusFSM.QRCODE_SCANNING:
+                self._most_frequent_label()
                 status_hex = _settings.colors.MAGENTA_HEX
             case StatusFSM.FACE_RECOGNITION:
+                self._most_frequent_label()
                 status_hex = _settings.colors.MAGENTA_HEX
             case StatusFSM.ALLOWED:
+                self._checking_time_allowed()
                 status_hex = _settings.colors.GREEN_HEX
-            case StatusFSM.NOT_ALLOWED:
-                status_hex = _settings.colors.RED_HEX
-            case StatusFSM.ERROR:
-                status_hex = _settings.colors.RED_HEX
+            # case StatusFSM.NOT_ALLOWED:
+            #     status_hex = _settings.colors.RED_HEX
+            # case StatusFSM.ERROR:
+            #     status_hex = _settings.colors.RED_HEX
+        current_time = time.localtime()
+        hours = current_time.tm_hour
+        minutes = current_time.tm_min
+
+        status_text = self.status.value.upper()
+        label_text = (
+            f"Welcome {self.guest_label}!"
+            if self.guest_label
+            else f"{hours}:{minutes:02d}"
+        )
 
         return status_text, label_text, status_hex
 
@@ -144,6 +187,8 @@ class GuestRecognition:
             raise NotCorrectFrameSizeGR(frame_size=frame_size)
 
         self.status = None
+        self.guest_label = None
+        self.start_time_allowed = None
         self.labels = []
         self.frame = None
         self.width = frame_size[0]
