@@ -29,7 +29,7 @@ class FaceDetectorSettings:
     scale_factor = 1.1  # 1.3
     min_neighbors = 5
     scalar_detect = 7
-    scalar_recognition = 3
+    scalar_recognition = 4
 
 
 class GuestRecognitionColors:
