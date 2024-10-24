@@ -25,12 +25,12 @@ guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 
 def request_callback(request):
     with MappedArray(request, "main") as m:
-        gr_status_text, gr_label_text, gr_status_hex = guest_recognition.run(
+        text_top, text_bottom, status_hex = guest_recognition.run(
             mapped_array=m
         )
-    label_top.setText(gr_status_text)
-    label_bottom.setText(gr_label_text)
-    window.setStyleSheet(f"background-color: #{gr_status_hex};")
+    label_top.setText(text_top)
+    label_bottom.setText(text_bottom)
+    window.setStyleSheet(f"background-color: #{status_hex};")
 
 
 def cleanup():

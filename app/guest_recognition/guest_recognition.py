@@ -12,6 +12,7 @@ from pyzbar.pyzbar import Decoded as PyzbarDecoded
 from core.config import GuestRecognitionSettings
 from .exceptions import NotCorrectStatusGR, NotCorrectFrameSizeGR
 from .status_fsm import StatusFSM
+from .turnstile_gpio import TurnstileGPIO
 
 
 _settings = GuestRecognitionSettings()
@@ -129,13 +130,15 @@ class GuestRecognition:
     def _checking_time_allowed(self):
         if not self.start_time_allowed:
             self.start_time_allowed = time.time()
+            self.turnstile_gpio.open_gate()
             return
 
         checking_time = time.time() - self.start_time_allowed
         if (
-            checking_time >= 10
+            checking_time >= 4
         ):  # TODO: instead `10` second - diffrent value from `_settings`
             self._reset_guest_recognition()
+            self.turnstile_gpio.close_gate()
 
     def _reset_guest_recognition(self):
         self.status = StatusFSM.SEARCHING
@@ -166,14 +169,14 @@ class GuestRecognition:
         hours = current_time.tm_hour
         minutes = current_time.tm_min
 
-        status_text = self.status.value.upper()
-        label_text = (
+        text_top = self.status.value.upper()
+        text_bottom = (
             f"Welcome {self.guest_label}!"
             if self.guest_label
             else f"{hours}:{minutes:02d}"
         )
 
-        return status_text, label_text, status_hex
+        return text_top, text_bottom, status_hex
 
     def run(self, mapped_array):
         """Processing PiCamera frame"""
@@ -190,6 +193,7 @@ class GuestRecognition:
         self.guest_label = None
         self.start_time_allowed = None
         self.labels = []
+        self.turnstile_gpio = TurnstileGPIO()
         self.frame = None
         self.width = frame_size[0]
         self.height = frame_size[1]
