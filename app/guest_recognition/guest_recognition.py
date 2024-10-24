@@ -183,7 +183,8 @@ class GuestRecognition:
         self._set_frame(mapped_array)
         self._find_qrcode()
         self._find_faces()
-        return self._processing()
+        text_top, text_bottom, status_hex = self._processing()
+        return text_top, text_bottom, status_hex
 
     def __init__(self, frame_size):
         if (not frame_size) or (len(frame_size) != 2):
