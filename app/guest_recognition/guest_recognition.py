@@ -140,7 +140,14 @@ class GuestRecognition:
             self._reset_guest_recognition()
             self.turnstile_gpio.close_gate()
 
-    def _reset_guest_recognition(self):
+    def _get_current_time(self):
+        """retrun str - `HH:MM`"""
+        current_time = time.localtime()
+        hours = current_time.tm_hour
+        minutes = current_time.tm_min
+        return f"{hours}:{minutes:02d}"
+
+    def _reset_guest_recognition(self):  # TODO: Rename
         self.status = StatusFSM.SEARCHING
         self.labels = []
         self.guest_label = None
@@ -165,15 +172,12 @@ class GuestRecognition:
             #     status_hex = _settings.colors.RED_HEX
             # case StatusFSM.ERROR:
             #     status_hex = _settings.colors.RED_HEX
-        current_time = time.localtime()
-        hours = current_time.tm_hour
-        minutes = current_time.tm_min
 
         text_top = self.status.value.upper()
         text_bottom = (
             f"Welcome {self.guest_label}!"
             if self.guest_label
-            else f"{hours}:{minutes:02d}"
+            else self._get_current_time()  # TODO: Change it on something (may be weather from fnugg)
         )
 
         return text_top, text_bottom, status_hex
