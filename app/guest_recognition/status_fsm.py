@@ -8,7 +8,8 @@ class StatusFSM(Enum):
     - `NOT_READY`:
     - `GET_READY`:
     - `SEARCHING`:
-    - `GET_CLOSER`: 
+    - `GET_CLOSER`:
+    - `STEP_BACK`:
     - `QRCODE_SCANNING`:
     - `FACE_RECOGNITION`:
     - `ALLOWED`:
@@ -16,12 +17,13 @@ class StatusFSM(Enum):
     - `ERROR`:
     """
 
-    NOT_READY = "not_ready"
-    GET_READY = "get_ready"
-    SEARCHING = "searching"
-    GET_CLOSER = "get_closer"
-    QRCODE_SCANNING = "qrcode_scanning"
-    FACE_RECOGNITION = "face_recognition"
-    ALLOWED = "allowed"
-    NOT_ALLOWED = "not_allowed"
-    ERROR = "error"
+    NOT_READY = "NOT_READY"
+    GET_READY = "GET_READY"
+    SEARCHING = "SEARCHING"
+    GET_CLOSER = "GET_CLOSER"
+    STEP_BACK = "STEP_BACK"
+    QRCODE_SCANNING = "QRCODE_SCANNING"
+    FACE_RECOGNITION = "FACE_RECOGNITION"
+    ALLOWED = "ALLOWED"
+    NOT_ALLOWED = "NOT_ALLOWED"
+    ERROR = "ERROR"
