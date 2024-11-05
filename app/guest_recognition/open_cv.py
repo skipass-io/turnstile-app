@@ -15,20 +15,28 @@ def output_perfomance(frame, params, width, height):
     )
 
 
-def output_face(frame, face, area_start, area_back):
+def output_face(frame, face, area_start, area_back, perfomance):
     x, y, w, h = face
     area = int(w * h / 1000)
     if area < area_start:
         color = (17, 151, 228)  # Blue
-        label = f"{int(area / 120 * 100)}% - closer"
+        label = (
+            f"{area} area - closer"
+            if perfomance == "True"
+            else f"{int(area / area_start * 100)}% - closer"
+        )
         thinkness = 3
     elif area_start <= area < area_back:
         color = (194, 51, 255)  # Pink
-        label = f"Wait"
+        label = f"{area} area - recognition" if perfomance == "True" else f"Wait"
         thinkness = 4
     else:
-        color = (255, 255, 255)  # White 
-        label = f"{int(area / 200 * 100)}% - back"
+        color = (255, 255, 255)  # White
+        label = (
+            f"{area} area - back"
+            if perfomance == "True"
+            else f"{int(area / area_back * 100)}% - back"
+        )
         thinkness = -1
 
     cv.rectangle(frame, (x, y), (x + w, y + h), color, thinkness)

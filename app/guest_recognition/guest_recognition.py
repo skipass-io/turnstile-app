@@ -134,7 +134,11 @@ class GuestRecognition:
 
         for face in found_faces:
             open_cv.output_face(
-                self.frame, face, self.AREA_START_RECOGNITION, self.AREA_STEP_BACK
+                self.frame,
+                face,
+                self.AREA_START_RECOGNITION,
+                self.AREA_STEP_BACK,
+                self.TURNSTILE_PERFOMANCE,
             )
             x, y, w, h = face
             facearea = int(w * h / 1000)
@@ -145,12 +149,13 @@ class GuestRecognition:
                 self.status = StatusFSM.FACE_RECOGNITION
             elif facearea > self.AREA_STEP_BACK:
                 self._reset_guest_recognition()
-                self.progerss_value = int(self.AREA_STEP_BACK / facearea)
                 self.status = StatusFSM.STEP_BACK
+                self.progerss_value = int(facearea / self.AREA_STEP_BACK * 100)
+
             else:
                 self._reset_guest_recognition()
-                self.progerss_value = int(facearea / self.AREA_START_RECOGNITION)
                 self.status = StatusFSM.GET_CLOSER
+                self.progerss_value = int(facearea / self.AREA_START_RECOGNITION * 100)
 
     def _face_recognition(self, face_coords):
         x, y, w, h = face_coords
@@ -177,7 +182,7 @@ class GuestRecognition:
             if self.guest_label:
                 self.status = StatusFSM.ALLOWED  # TODO: ask DB for allowed or not
 
-        return int(self.labels / self.FACE_RECOGNITION_LABELS_COUNT)
+        return int(len(self.labels) / self.FACE_RECOGNITION_LABELS_COUNT * 100)
 
     def _checking_time_allowed(self):
         if not self.start_time_allowed:
@@ -216,7 +221,7 @@ class GuestRecognition:
                 state["progress"] = self._most_frequent_label()
                 pass
             case StatusFSM.ALLOWED:
-                state["status"] = self.guest_label
+                state["label"] = self.guest_label
                 state["progress"] = 100
                 self._checking_time_allowed()
                 pass
