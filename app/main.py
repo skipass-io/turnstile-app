@@ -1,100 +1,36 @@
-import sys
+import os
+from enum import Enum
+from typing_extensions import Annotated
 
-from PySide2 import QtCore
-from PySide2.QtGui import QFontDatabase, QFont
-from PySide2.QtWidgets import (
-    QApplication,
-    QHBoxLayout,
-    QLabel,
-    QVBoxLayout,
-    QWidget,
-)
-from picamera2 import Picamera2, MappedArray
+import typer
 
-from core.config import AppSettings
-from guest_recognition import GuestRecognition, QGlPicamera2
+from qt import exec
 
 
-app_settings = AppSettings()
+app = typer.Typer()
 
 
-PICAM2_WIDTH, PICAM2_HEIGHT = app_settings.picam2_horizontal_size
-
-guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
-
-
-def request_callback(request):
-    with MappedArray(request, "main") as m:
-        text_top, text_bottom, status_hex = guest_recognition.run(
-            mapped_array=m
-        )
-    label_top.setText(text_top)
-    label_bottom.setText(text_bottom)
-    window.setStyleSheet(f"background-color: #{status_hex};")
-
-
-def cleanup():
-    picam2.post_callback = None
-
-
-picam2 = Picamera2()
-picam2.post_callback = request_callback
-picam2.configure(
-    picam2.create_preview_configuration(main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)})
-)
-app = QApplication(sys.argv)
-font_id = QFontDatabase.addApplicationFont(app_settings.font_path)
-font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
-font = QFont(font_name, 30)
-
-
-qpicamera2 = QGlPicamera2(
-    picam2,
-    width=PICAM2_WIDTH,
-    height=PICAM2_HEIGHT,
-    bg_colour=(255, 255, 255),
-    keep_ar=False,
-)
-label_top = QLabel()
-label_bottom = QLabel()
-label_top.setFont(font)
-label_bottom.setFont(font)
-label_top.setStyleSheet("color: #fff;")
-label_bottom.setStyleSheet("color: #fff;")
-window = QWidget()
-window.setWindowTitle("turnstile-app")
-window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-
-
-label_top.setFixedHeight(50)
-label_bottom.setFixedHeight(50)
-label_top.setAlignment(QtCore.Qt.AlignCenter)
-label_bottom.setAlignment(QtCore.Qt.AlignCenter)
-
-
-layout_v = QVBoxLayout()
-layout_v.addWidget(label_top)
-layout_v.addWidget(qpicamera2)
-layout_v.addWidget(label_bottom)
-window.setLayout(layout_v)
-window.showFullScreen()
-
-
-# screen info
-screen = app.primaryScreen()
-print("Screen: %s" % screen.name())
-size = screen.size()
-print("Size: %d x %d" % (size.width(), size.height()))
-rect = screen.availableGeometry()
-print("Available: %d x %d" % (rect.width(), rect.height()))
-
-
-def main():
-    picam2.start()
-    window.show()
-    app.exec_()
-    picam2.stop()
+@app.command()
+def run(
+    area_start_recognition: Annotated[
+        int, typer.Option("--area_start_recognition", "-sr")
+    ] = 150,
+    area_step_back: Annotated[int, typer.Option("--area_step_back", "-sb")] = 200,
+    face_recognition_labels_count: Annotated[
+        int, typer.Option("--face_recognition_labels_count", "-lc")
+    ] = 150,
+    face_recognition_percent: Annotated[
+        int, typer.Option("--face_recognition_labels_percent", "-lp")
+    ] = 80,
+    show_perfomance: Annotated[bool, typer.Option("--perfomans", "-p")] = False,
+):
+    os.environ["AREA_START_RECOGNITION"] = str(area_start_recognition)
+    os.environ["AREA_STEP_BACK"] = str(area_step_back)
+    os.environ["FACE_RECOGNITION_LABELS_COUNT"] = str(face_recognition_labels_count)
+    os.environ["FACE_RECOGNITION_PERCENT"] = str(face_recognition_percent)
+    os.environ["TURNSTILE_PERFOMANCE"] = str(show_perfomance)
+    exec()
 
 
 if __name__ == "__main__":
-    main()
+    app()
