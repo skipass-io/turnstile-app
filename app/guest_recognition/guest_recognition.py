@@ -1,6 +1,5 @@
 import os
 import pickle
-import functools
 import time
 
 import cv2 as cv
@@ -9,7 +8,7 @@ from keras_facenet import FaceNet
 from sklearn.preprocessing import LabelEncoder
 
 from core.config import GuestRecognitionSettings
-from .detectors import DetectorPyzbar
+from .detectors import DetectorPyzbar, DetectorHaarcascade
 from .exceptions import NotCorrectFrameSizeGR
 from .status_fsm import StatusFSM
 from .turnstile_gpio import TurnstileGPIO
@@ -91,52 +90,38 @@ class GuestRecognition:
         self.labels.append(qr_code)
         self.status = StatusFSM.QRCODE_SCANNING
 
-    def _face_detection(self):
-        found_faces = self.face_detector.detectMultiScale(
-            image=self.cv_gray,
-            scaleFactor=_set.fd.scale_factor,
-            minNeighbors=_set.fd.min_neighbors,
-            minSize=(
-                int(self.width / _set.fd.scalar_detect),
-                int(self.height / _set.fd.scalar_detect),
-            ),
-        )
-        count_faces = len(found_faces)
-        return found_faces, count_faces
-
     def _find_faces(self):
         if self.status == StatusFSM.ALLOWED:
             return
 
-        found_faces, count_faces = self._face_detection()
-        if (count_faces == 0) and (self.status != StatusFSM.QRCODE_SCANNING):
+        detected_face = self.detector_haarcascade.detect_face(self.cv_gray)
+
+        if (not detected_face) and (self.status != StatusFSM.QRCODE_SCANNING):
             self.status = StatusFSM.SEARCHING
             return
+        
+        # TODO: refactoring 
+        open_cv.output_face(
+            self.frame,
+            detected_face,
+            self.AREA_START_RECOGNITION,
+            self.AREA_STEP_BACK,
+            self.TURNSTILE_PERFOMANCE,
+        )
+        x, y, w, h = detected_face
+        facearea = int(w * h / 1000)
+        if (facearea > self.AREA_START_RECOGNITION) & (facearea < self.AREA_STEP_BACK):
+            self._face_recognition(face_coords=detected_face)
+            self.status = StatusFSM.FACE_RECOGNITION
+        elif facearea > self.AREA_STEP_BACK:
+            self._reset_guest_recognition()
+            self.status = StatusFSM.STEP_BACK
+            self.progerss_value = int(facearea / self.AREA_STEP_BACK * 100)
 
-        for face in found_faces:
-            open_cv.output_face(
-                self.frame,
-                face,
-                self.AREA_START_RECOGNITION,
-                self.AREA_STEP_BACK,
-                self.TURNSTILE_PERFOMANCE,
-            )
-            x, y, w, h = face
-            facearea = int(w * h / 1000)
-            if (facearea > self.AREA_START_RECOGNITION) & (
-                facearea < self.AREA_STEP_BACK
-            ):
-                self._face_recognition(face_coords=face)
-                self.status = StatusFSM.FACE_RECOGNITION
-            elif facearea > self.AREA_STEP_BACK:
-                self._reset_guest_recognition()
-                self.status = StatusFSM.STEP_BACK
-                self.progerss_value = int(facearea / self.AREA_STEP_BACK * 100)
-
-            else:
-                self._reset_guest_recognition()
-                self.status = StatusFSM.GET_CLOSER
-                self.progerss_value = int(facearea / self.AREA_START_RECOGNITION * 100)
+        else:
+            self._reset_guest_recognition()
+            self.status = StatusFSM.GET_CLOSER
+            self.progerss_value = int(facearea / self.AREA_START_RECOGNITION * 100)
 
     def _face_recognition(self, face_coords):
         x, y, w, h = face_coords
@@ -262,6 +247,12 @@ class GuestRecognition:
 
         # Detectors
         self.detector_pyzbar = DetectorPyzbar()
+        self.detector_haarcascade = DetectorHaarcascade(
+            haarcascade_file=_set.data.haarcascade_path,
+            scale_factor=_set.fd.scale_factor,
+            min_neighbors=_set.fd.min_neighbors,
+            scalar_detect=_set.fd.scalar_detect,
+        )
 
         self.TURNSTILE_PERFOMANCE = None
         self.AREA_START_RECOGNITION = None
@@ -283,7 +274,6 @@ class GuestRecognition:
         self.height = frame_size[1]
         self.cv_rgb = None
         self.cv_gray = None
-        self.face_detector = cv.CascadeClassifier(_set.data.haarcascade_path)
 
         self.label_encoder = LabelEncoder()
         self.facenet = FaceNet()
