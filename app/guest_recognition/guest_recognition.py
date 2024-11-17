@@ -7,10 +7,9 @@ import cv2 as cv
 import numpy as np
 from keras_facenet import FaceNet
 from sklearn.preprocessing import LabelEncoder
-from pyzbar.pyzbar import decode as pyzbar_decoder
-from pyzbar.pyzbar import Decoded as PyzbarDecoded
 
 from core.config import GuestRecognitionSettings
+from .detectors import DetectorPyzbar
 from .exceptions import NotCorrectFrameSizeGR
 from .status_fsm import StatusFSM
 from .turnstile_gpio import TurnstileGPIO
@@ -80,34 +79,16 @@ class GuestRecognition:
     def _set_frame(self, mapped_array):
         self.frame = mapped_array.array
 
-        # self.cv_rgb = cv.cvtColor(self.frame, cv.COLOR_YUV420p2RGB)
-        # self.cv_gray = cv.cvtColor(self.frame, cv.COLOR_YUV420p2GRAY)
         self.cv_rgb = cv.cvtColor(self.frame, cv.COLOR_BGR2RGB)
         self.cv_gray = cv.cvtColor(self.frame, cv.COLOR_BGR2GRAY)
 
     def _find_qrcode(self):
         if self.status == StatusFSM.ALLOWED:
             return
-        qr_codes = [qr for qr in self.qr_decoder(self.cv_gray) if qr.type == "QRCODE"]
-        if len(qr_codes) == 0:
+        qr_code = self.detector_pyzbar.detect_qrcode(self.cv_gray)
+        if not qr_code:
             return
-        elif len(qr_codes) == 1:
-            qr_code = qr_codes[0]
-        else:
-            qr_code = functools.reduce(
-                lambda qr_a, qr_b: (
-                    qr_a
-                    if (qr_a.rect[2] + qr_a.rect[3]) > (qr_b.rect[2] + qr_b.rect[3])
-                    else qr_b
-                ),
-                qr_codes,
-            )
-        if (self.status == StatusFSM.FACE_RECOGNITION) or (
-            self.status == StatusFSM.GET_CLOSER
-        ):
-            self._reset_guest_recognition()
-        label = qr_code.data.decode("utf-8")
-        self.labels.append(label)
+        self.labels.append(qr_code)
         self.status = StatusFSM.QRCODE_SCANNING
 
     def _face_detection(self):
@@ -279,6 +260,9 @@ class GuestRecognition:
         if (not frame_size) or (len(frame_size) != 2):
             raise NotCorrectFrameSizeGR(frame_size=frame_size)
 
+        # Detectors
+        self.detector_pyzbar = DetectorPyzbar()
+
         self.TURNSTILE_PERFOMANCE = None
         self.AREA_START_RECOGNITION = None
         self.AREA_STEP_BACK = None
@@ -300,7 +284,7 @@ class GuestRecognition:
         self.cv_rgb = None
         self.cv_gray = None
         self.face_detector = cv.CascadeClassifier(_set.data.haarcascade_path)
-        self.qr_decoder = pyzbar_decoder
+
         self.label_encoder = LabelEncoder()
         self.facenet = FaceNet()
         self.svm_model = None
