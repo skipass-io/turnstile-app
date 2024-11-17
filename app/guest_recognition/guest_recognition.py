@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 from core.config import GuestRecognitionSettings
-from .detectors import DetectorPyzbar, DetectorHaarcascade
+from .detectors import DetectorBlazeface, DetectorHaarcascade, DetectorPyzbar
 from .embedder import Embedder
 from .exceptions import NotCorrectFrameSizeGR
 from .status_fsm import StatusFSM
@@ -242,13 +242,16 @@ class GuestRecognition:
             raise NotCorrectFrameSizeGR(frame_size=frame_size)
 
         # Detectors
-        self.detector_pyzbar = DetectorPyzbar()
+        self.detector_blazeface = DetectorBlazeface(
+            model_asset_path=_set.data.blazeface_path
+        )
         self.detector_haarcascade = DetectorHaarcascade(
             haarcascade_file=_set.data.haarcascade_path,
             scale_factor=_set.fd.scale_factor,
             min_neighbors=_set.fd.min_neighbors,
             scalar_detect=_set.fd.scalar_detect,
         )
+        self.detector_pyzbar = DetectorPyzbar()
 
         # Embedder
         self.embedder = Embedder()

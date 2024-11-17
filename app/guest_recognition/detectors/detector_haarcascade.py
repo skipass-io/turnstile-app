@@ -20,7 +20,7 @@ class DetectorHaarcascade:
 
     def detect_face(self, cv_gray):
         """
-        Face detection on the frame
+        Face detection (Haarcascade) on the frame
         (if there is more than one face,
         the largest one / closest to the frame will be returned)
         """
@@ -57,8 +57,7 @@ class DetectorHaarcascade:
             detected_face = functools.reduce(
                 lambda face_a, face_b: (
                     face_a
-                    if (face_a.rect[2] * face_a.rect[3])
-                    > (face_b.rect[2] * face_b.rect[3])
+                    if (face_a[2] * face_a[3]) > (face_b[2] * face_b[3])
                     else face_b
                 ),
                 detected_faces,
