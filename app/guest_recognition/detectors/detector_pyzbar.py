@@ -10,7 +10,7 @@ class DetectorPyzbar:
         """
         QR code detection on the frame
         (if there is more than one QR code, 
-        the largest one closest to the frame will be returned)
+        the largest one / closest to the frame will be returned)
         """
         qr_codes = [qr for qr in self.decoder(cv_gray) if qr.type == "QRCODE"]
         if len(qr_codes) == 0:
