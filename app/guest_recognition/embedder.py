@@ -11,11 +11,11 @@ class Embedder:
         """
         Get embeddings from detected face on the frame
         """
-        face_img = self._preprocessing_img(face_coords, cv_rgb)
+        face_img = self._image_preprocessing(face_coords, cv_rgb)
         ypred = self.facenet.embeddings(face_img)
         return ypred
 
-    def _preprocessing_img(self, face_coords, cv_rgb):
+    def _image_preprocessing(self, face_coords, cv_rgb):
         """
         Preprocessing of the frame image to getting embedings
         """
