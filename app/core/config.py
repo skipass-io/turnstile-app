@@ -50,6 +50,9 @@ class GuestRecognitionColors:
 class GuestRecognitionData:
     DATA_DIR = f"{BASE_DIR}/data"
 
+    blazeface_file = "detector.tflite"
+    blazeface_path = f"{BASE_DIR}/app/assets/models/{blazeface_file}"
+
     haarcascade_file = "haarcascade_frontalface_default.xml"
     haarcascade_path = f"{BASE_DIR}/app/assets/models/{haarcascade_file}"
 
