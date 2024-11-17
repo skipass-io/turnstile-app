@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "turnstile-app"
-version = "0.0.13"
+version = "0.0.14"
 description = "Turnstile app on Raspberry Pi 5 with PiCamera for skipass.io"
 authors = ["skipass.io"]
 readme = "README.md"
@@ -15,6 +15,8 @@ pyzbar = "^0.1.9"
 opencv-python-headless = "^4.10.0.84"
 websockets = "^13.1"
 loguru = "^0.7.2"
+qrcode = {extras = ["pil"], version = "^8.0"}
+typer = "^0.12.5"
 
 
 [build-system]

@@ -9,9 +9,6 @@ BASE_DIR = Path(__file__).parent.parent.parent
 
 # App Settings
 class AppSettings:
-    # TODO: target for vetical screen size 720:1280
-    picam2_vertical_size = (595, 1280)
-    picam2_horizontal_size = (1280, 595)
     # Font Settings
     font_name = "Poppins-SemiBold.ttf"
     font_path = f"{BASE_DIR}/app/assets/fonts/{font_name}"
@@ -29,14 +26,14 @@ class FaceDetectorSettings:
     scale_factor = 1.1  # 1.3
     min_neighbors = 5
     scalar_detect = 7
-    scalar_recognition = 4
+    scalar_recognition = 3
 
 
 class GuestRecognitionColors:
     # MAGENTA
     MAGENTA_HEX = "9400D3"
     MAGENTA_RGB = (148, 0, 211)
-    #LIGHT_BLUE
+    # LIGHT_BLUE
     LIGHT_BLUE_HEX = "ADDBF6"
     LIGHT_BLUE_RGB = (202, 80, 82)
     # BLUE
@@ -64,6 +61,6 @@ class GuestRecognitionData:
 
 
 class GuestRecognitionSettings:
-    face_detector_settings = FaceDetectorSettings()
+    fd = FaceDetectorSettings()
     colors = GuestRecognitionColors()
     data = GuestRecognitionData()
