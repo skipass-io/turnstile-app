@@ -1,5 +1,4 @@
-# embeddings/
-# svm_model/
+*.lgd-nfy0
 database/
 
 # Byte-compiled / optimized / DLL files
