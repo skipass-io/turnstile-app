@@ -51,7 +51,7 @@ class GuestRecognitionData:
     DATA_DIR = f"{BASE_DIR}/data"
 
     haarcascade_file = "haarcascade_frontalface_default.xml"
-    haarcascade_path = f"{DATA_DIR}/haarcascades/{haarcascade_file}"
+    haarcascade_path = f"{BASE_DIR}/app/assets/models/{haarcascade_file}"
 
     svm_model_file = "svm_model_160x160.pkl"
     svm_model_path = f"{DATA_DIR}/svm_model/{svm_model_file}"
