@@ -22,13 +22,13 @@ def run(
     face_recognition_percent: Annotated[
         int, typer.Option("--face_recognition_labels_percent", "-lp")
     ] = 85,
-    show_perfomance: Annotated[bool, typer.Option("--perfomans", "-p")] = False,
+    show_performance: Annotated[bool, typer.Option("--perfomans", "-p")] = False,
 ):
     os.environ["AREA_START_RECOGNITION"] = str(area_start_recognition)
     os.environ["AREA_STEP_BACK"] = str(area_step_back)
     os.environ["FACE_RECOGNITION_LABELS_COUNT"] = str(face_recognition_labels_count)
     os.environ["FACE_RECOGNITION_PERCENT"] = str(face_recognition_percent)
-    os.environ["TURNSTILE_PERFOMANCE"] = str(show_perfomance)
+    os.environ["TURNSTILE_PERFORMANCE"] = str(show_performance)
     exec()
 
 

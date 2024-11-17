@@ -22,9 +22,9 @@ _set = GuestRecognitionSettings()
 class GuestRecognition:
     """That's how we let the guests through"""
 
-    def _turnstile_perfomance(self):
-        while self.TURNSTILE_PERFOMANCE is None:
-            self.TURNSTILE_PERFOMANCE = os.environ.get("TURNSTILE_PERFOMANCE")
+    def _turnstile_performance(self):
+        while self.TURNSTILE_PERFORMANCE is None:
+            self.TURNSTILE_PERFORMANCE = os.environ.get("TURNSTILE_PERFORMANCE")
         while self.AREA_START_RECOGNITION is None:
             self.AREA_START_RECOGNITION = os.environ.get("AREA_START_RECOGNITION")
             if self.AREA_START_RECOGNITION:
@@ -46,18 +46,18 @@ class GuestRecognition:
             if self.FACE_RECOGNITION_PERCENT:
                 self.FACE_RECOGNITION_PERCENT = int(self.FACE_RECOGNITION_PERCENT)
 
-        self.perfomance_params = {}
-        self.perfomance_params["fps"] = self._fps_perfomance()
-        self.perfomance_params["wifi"] = True
-        if self.TURNSTILE_PERFOMANCE == "True":
-            open_cv.output_perfomance(
+        self.performance_params = {}
+        self.performance_params["fps"] = self._fps_performance()
+        self.performance_params["wifi"] = True
+        if self.TURNSTILE_PERFORMANCE == "True":
+            open_cv.output_performance(
                 frame=self.frame,
-                params=self.perfomance_params,
+                params=self.performance_params,
                 width=self.width,
                 height=self.height,
             )
 
-    def _fps_perfomance(self):
+    def _fps_performance(self):
         self.fps += 1
         elapsed_time = time.time() - self.start_time
 
@@ -106,7 +106,7 @@ class GuestRecognition:
             detected_face,
             self.AREA_START_RECOGNITION,
             self.AREA_STEP_BACK,
-            self.TURNSTILE_PERFOMANCE,
+            self.TURNSTILE_PERFORMANCE,
         )
         x, y, w, h = detected_face
         facearea = int(w * h / 1000)
@@ -234,7 +234,7 @@ class GuestRecognition:
         self._set_frame(mapped_array)
         self._find_qrcode()
         self._find_faces()
-        self._turnstile_perfomance()
+        self._turnstile_performance()
         return self._processing()
 
     def __init__(self, frame_size):
@@ -253,7 +253,7 @@ class GuestRecognition:
         # Embedder
         self.embedder = Embedder()
 
-        self.TURNSTILE_PERFOMANCE = None
+        self.TURNSTILE_PERFORMANCE = None
         self.AREA_START_RECOGNITION = None
         self.AREA_STEP_BACK = None
         self.FACE_RECOGNITION_LABELS_COUNT = None
