@@ -4,11 +4,11 @@ import time
 
 import cv2 as cv
 import numpy as np
-from keras_facenet import FaceNet
 from sklearn.preprocessing import LabelEncoder
 
 from core.config import GuestRecognitionSettings
 from .detectors import DetectorPyzbar, DetectorHaarcascade
+from .embedder import Embedder
 from .exceptions import NotCorrectFrameSizeGR
 from .status_fsm import StatusFSM
 from .turnstile_gpio import TurnstileGPIO
@@ -99,8 +99,8 @@ class GuestRecognition:
         if (not detected_face) and (self.status != StatusFSM.QRCODE_SCANNING):
             self.status = StatusFSM.SEARCHING
             return
-        
-        # TODO: refactoring 
+
+        # TODO: refactoring
         open_cv.output_face(
             self.frame,
             detected_face,
@@ -124,11 +124,7 @@ class GuestRecognition:
             self.progerss_value = int(facearea / self.AREA_START_RECOGNITION * 100)
 
     def _face_recognition(self, face_coords):
-        x, y, w, h = face_coords
-        face_img = self.cv_rgb[y : y + h, x : x + w]
-        face_img = cv.resize(face_img, (160, 160))
-        face_img = np.expand_dims(face_img, axis=0)
-        ypred = self.facenet.embeddings(face_img)
+        ypred = self.embedder.get_embeddings(face_coords, self.cv_rgb)
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
         self.labels.append(label)
@@ -254,6 +250,9 @@ class GuestRecognition:
             scalar_detect=_set.fd.scalar_detect,
         )
 
+        # Embedder
+        self.embedder = Embedder()
+
         self.TURNSTILE_PERFOMANCE = None
         self.AREA_START_RECOGNITION = None
         self.AREA_STEP_BACK = None
@@ -276,7 +275,6 @@ class GuestRecognition:
         self.cv_gray = None
 
         self.label_encoder = LabelEncoder()
-        self.facenet = FaceNet()
         self.svm_model = None
         self.faces_embeddings = None
 
