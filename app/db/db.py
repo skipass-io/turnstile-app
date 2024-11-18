@@ -46,7 +46,7 @@ def get_cursor():
 
 
 def _init_db():
-    with open("scaffold.sql", "r") as f:
+    with open(_settings.scaffold_sql, "r") as f:
         scaffold_sql = f.read()
     cursor.executescript(scaffold_sql)
     conn.commit()
