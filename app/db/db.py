@@ -21,6 +21,13 @@ class DataBase:
         )
         self.conn.commit()
 
+    def update(self, table, column_values, row_id): # TODO:check #18 `update` method on correct work 
+        set_clause = ", ".join([f"{column} = ?" for column in column_values.keys()])
+        values = list(column_values.values()) + [row_id]
+        self.cursor.execute(f"UPDATE {table} SET {set_clause} WHERE id = ?", values)
+        self.conn.commit()
+
+
     def fetchall(self, table, columns):
         columns_joined = ", ".join(columns)
         self.cursor.execute(f"SELECT {columns_joined} FROM {table}")
