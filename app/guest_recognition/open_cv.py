@@ -60,3 +60,13 @@ def output_face(
         3,
         cv.LINE_AA,
     )
+
+
+def output_qrcode(
+    frame,
+    qrcode_rect,
+):
+    x, y, w, h = qrcode_rect
+    color = (194, 51, 255)  # Pink
+    thinkness = 4
+    cv.rectangle(frame, (x, y), (x + w, y + h), color, thinkness)
