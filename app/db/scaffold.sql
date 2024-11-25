@@ -13,8 +13,8 @@ CREATE TABLE app_settings(
 CREATE TABLE skipass(
     id integer primary key autoincrement,
     type integer not null,
-    start_time timestamp not null,
-    end_time timestamp not null,
+    start_slot timestamp not null,
+    end_slot timestamp not null,
     label text not null
 );
 
