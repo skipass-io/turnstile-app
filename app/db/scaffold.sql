@@ -10,6 +10,14 @@ CREATE TABLE app_settings(
     gr_iteration numeric not null
 ); 
 
+CREATE TABLE skipass(
+    id integer primary key autoincrement,
+    type integer not null,
+    start_time timestamp not null,
+    end_time timestamp not null,
+    label text not null
+);
+
 INSERT INTO app_settings (
     show_performance, 
     gr_face_detector,
