@@ -27,7 +27,8 @@ class DetectorHaarcascade:
         detected_faces = self._detect_faces(cv_gray)
         if len(detected_faces) == 0:
             return
-        detected_face = self._get_face(detected_faces)
+        rect = self._get_face_rect(detected_faces)
+        detected_face = {"rect": rect, "area": rect[2] * rect[3]}
         return detected_face
 
     def _detect_faces(self, cv_gray):
@@ -45,7 +46,7 @@ class DetectorHaarcascade:
             ),
         )
 
-    def _get_face(self, detected_faces):
+    def _get_face_rect(self, detected_faces):
         """
         Returns a detected face from the array of `detected_faces`.
         (if more than one face is detected,
