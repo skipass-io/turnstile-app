@@ -1,4 +1,3 @@
-import os
 import pickle
 import time
 
@@ -7,9 +6,9 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 from core.config import GuestRecognitionSettings
+from db import database
 from .detectors import DetectorBlazeface, DetectorHaarcascade, DetectorPyzbar
 from .embedder import Embedder
-from .exceptions import NotCorrectFrameSizeGR
 from .status_fsm import StatusFSM
 from .turnstile_gpio import TurnstileGPIO
 from .helpers import get_qrcode_label
@@ -20,44 +19,112 @@ _set = GuestRecognitionSettings()
 
 
 class GuestRecognition:
-    """That's how we let the guests through"""
+    def __init__(self, frame_size):
+        # Guest Recognition
+        self.status = StatusFSM.DETECTING
+        self.guest_recognition_iteration = 0
+        self.collected_labels = []
+        self.passage_label = None
+        self.start_allowed_time = None
+        self.processed_output = {}
 
-    def _turnstile_performance(self):
-        while self.TURNSTILE_PERFORMANCE is None:
-            self.TURNSTILE_PERFORMANCE = os.environ.get("TURNSTILE_PERFORMANCE")
-        while self.AREA_START_RECOGNITION is None:
-            self.AREA_START_RECOGNITION = os.environ.get("AREA_START_RECOGNITION")
-            if self.AREA_START_RECOGNITION:
-                self.AREA_START_RECOGNITION = int(self.AREA_START_RECOGNITION)
-        while self.AREA_STEP_BACK is None:
-            self.AREA_STEP_BACK = os.environ.get("AREA_STEP_BACK")
-            if self.AREA_STEP_BACK:
-                self.AREA_STEP_BACK = int(self.AREA_STEP_BACK)
-        while self.FACE_RECOGNITION_LABELS_COUNT is None:
-            self.FACE_RECOGNITION_LABELS_COUNT = os.environ.get(
-                "FACE_RECOGNITION_LABELS_COUNT"
-            )
-            if self.FACE_RECOGNITION_LABELS_COUNT:
-                self.FACE_RECOGNITION_LABELS_COUNT = int(
-                    self.FACE_RECOGNITION_LABELS_COUNT
-                )
-        while self.FACE_RECOGNITION_PERCENT is None:
-            self.FACE_RECOGNITION_PERCENT = os.environ.get("FACE_RECOGNITION_PERCENT")
-            if self.FACE_RECOGNITION_PERCENT:
-                self.FACE_RECOGNITION_PERCENT = int(self.FACE_RECOGNITION_PERCENT)
+        # Frame
+        self.width = frame_size[0]
+        self.height = frame_size[1]
+        self.frame = None
+        self.cv_rgb = None
+        self.cv_gray = None
 
-        self.performance_params = {}
-        self.performance_params["fps"] = self._fps_performance()
-        self.performance_params["wifi"] = True
-        if self.TURNSTILE_PERFORMANCE == "True":
-            open_cv.output_performance(
-                frame=self.frame,
-                params=self.performance_params,
-                width=self.width,
-                height=self.height,
-            )
+        # Face Detectors
+        self.face_detector = None
+        self.detector_blazeface = DetectorBlazeface(
+            model_asset_path=_set.data.blazeface_path
+        )
+        self.detector_haarcascade = DetectorHaarcascade(
+            haarcascade_file=_set.data.haarcascade_path,
+            scale_factor=_set.fd.scale_factor,
+            min_neighbors=_set.fd.min_neighbors,
+            scalar_detect=_set.fd.scalar_detect,
+        )
 
-    def _fps_performance(self):
+        # QR Code Detector
+        self.detector_pyzbar = DetectorPyzbar()
+
+        # Embedder
+        self.embedder = Embedder()
+
+        # SVM
+        self.label_encoder = LabelEncoder()
+        self.svm_model = None
+        self.faces_embeddings = None
+        self._load_ml_data()
+
+        # GPIO
+        self.turnstile_gpio = TurnstileGPIO()
+
+        # FPS
+        self.fps = 0
+        self.fps_calc = "calculated"
+        self.start_time = time.time()
+
+        # Set Settings
+        self._set_app_settings()
+
+    def run(self, mapped_array):
+        """
+        Processing PiCamera frame for Detecting Face or QR Code
+        """
+        self._pre_processing_stage(mapped_array)
+        self._processing_stage()
+        self._post_processing_stage()
+
+        return self.processed_output
+
+    # PRE PROCESSING STAGE
+    def _pre_processing_stage(self, mapped_array):
+        self._pre_processing_frame(mapped_array)
+
+    def _pre_processing_frame(self, mapped_array):
+        # Main frame
+        self.frame = mapped_array.array
+
+        # Open CV RGB & GRAY imgs
+        self.cv_rgb = cv.cvtColor(self.frame, cv.COLOR_BGR2RGB)
+        self.cv_gray = cv.cvtColor(self.frame, cv.COLOR_BGR2GRAY)
+
+    # PROCESSING STAGE
+    def _processing_stage(self):
+        self.detected_qrcode = self._processing_detect_qrcode()
+        self.detected_face = self._processing_detect_face()
+
+        if self.SHOW_PERFORMANCE:
+            self._processing_app_performance()
+
+    def _processing_detect_qrcode(self):
+        if self.status == StatusFSM.ALLOWED:
+            return
+        return self.detector_pyzbar.detect_qrcode(self.cv_gray)
+
+    def _processing_detect_face(self):
+        match self.FACE_DETECTOR:
+            case "Haarcascade":
+                cv_frame = self.cv_gray
+            case "Blazeface":
+                cv_frame = self.cv_rgb
+        return self.face_detector.detect_face(cv_frame)
+
+    def _processing_app_performance(self):
+        self.performance_params = dict()
+        self.performance_params["fps"] = self._processing_fps_performance()
+        self.performance_params["FD"] = self.FACE_DETECTOR
+        open_cv.output_performance(
+            frame=self.frame,
+            params=self.performance_params,
+            width=self.width,
+            height=self.height,
+        )
+
+    def _processing_fps_performance(self):
         self.fps += 1
         elapsed_time = time.time() - self.start_time
 
@@ -68,217 +135,362 @@ class GuestRecognition:
 
         return f"{self.fps_calc:.2f}"
 
-    def _load_data_for_ml(self):
-        self.svm_model = pickle.load(open(_set.data.svm_model_path, "rb"))
-        self.faces_embeddings = np.load(_set.data.embeddings_path)
-        Y = self.faces_embeddings["arr_1"]
-        self.label_encoder.fit(Y)
-        self.status = StatusFSM.SEARCHING
-
-    def _set_frame(self, mapped_array):
-        self.frame = mapped_array.array
-
-        self.cv_rgb = cv.cvtColor(self.frame, cv.COLOR_BGR2RGB)
-        self.cv_gray = cv.cvtColor(self.frame, cv.COLOR_BGR2GRAY)
-
-    def _find_qrcode(self):
-        if self.status == StatusFSM.ALLOWED:
-            return
-        qr_code = self.detector_pyzbar.detect_qrcode(self.cv_gray)
-        if not qr_code:
-            return
-        self.labels.append(qr_code)
-        self.status = StatusFSM.QRCODE_SCANNING
-
-    def _find_faces(self):
-        if self.status == StatusFSM.ALLOWED:
-            return
-
-        detected_face = self.detector_haarcascade.detect_face(self.cv_gray)
-
-        if (not detected_face) and (self.status != StatusFSM.QRCODE_SCANNING):
-            self.status = StatusFSM.SEARCHING
-            return
-
-        # TODO: refactoring
-        open_cv.output_face(
-            self.frame,
-            detected_face,
-            self.AREA_START_RECOGNITION,
-            self.AREA_STEP_BACK,
-            self.TURNSTILE_PERFORMANCE,
-        )
-        x, y, w, h = detected_face
-        facearea = int(w * h / 1000)
-        if (facearea > self.AREA_START_RECOGNITION) & (facearea < self.AREA_STEP_BACK):
-            self._face_recognition(face_coords=detected_face)
-            self.status = StatusFSM.FACE_RECOGNITION
-        elif facearea > self.AREA_STEP_BACK:
-            self._reset_guest_recognition()
-            self.status = StatusFSM.STEP_BACK
-            self.progerss_value = int(facearea / self.AREA_STEP_BACK * 100)
-
+    # POST PROCESSING STAGE
+    def _post_processing_stage(self):
+        # TODO: #29 `_post_processing_stage` set status, processing `processed_qr_label` & `processed_detected_face`
+        if self.detected_qrcode:
+            self._post_processing_qrcode()
+        elif self.detected_face:
+            self._post_processing_face()
         else:
-            self._reset_guest_recognition()
-            self.status = StatusFSM.GET_CLOSER
-            self.progerss_value = int(facearea / self.AREA_START_RECOGNITION * 100)
+            self._post_processing_nothing()
+
+        self._output_postprocessing()
+
+    def _post_processing_qrcode(self):
+        match self.status:
+            case (
+                StatusFSM.DETECTING,
+                StatusFSM.FACE_DETECTED_LEVEL_A,
+                StatusFSM.FACE_DETECTED_LEVEL_C,
+            ):
+                qrcode_label = self._post_processing_decode_qrcode(self.detected_qrcode)
+                self.collected_labels.append(qrcode_label)
+                self.status = StatusFSM.QRCODE_DETECTED
+            case StatusFSM.QRCODE_DETECTED:
+                qrcode_label = self._post_processing_decode_qrcode(self.detected_qrcode)
+                self.collected_labels.append(qrcode_label)
+                if len(self.collected_labels) >= self.LABELS_COUNT:
+                    self._post_processing_check_collected_labels()
+                else:
+                    self.status = StatusFSM.QRCODE_DETECTED
+            case StatusFSM.FACE_DETECTED_LEVEL_B:
+                self._post_processing_reset_collected_labels()
+                qrcode_label = self._post_processing_decode_qrcode(self.detected_qrcode)
+                self.collected_labels.append(qrcode_label)
+                self.status = StatusFSM.QRCODE_DETECTED
+            case StatusFSM.NOT_ALLOWED:
+                qrcode_label = self._post_processing_decode_qrcode(self.detected_qrcode)
+                self._post_processing_check_not_allowed_label(qrcode_label)
+
+    def _post_processing_face(self):
+        if self.status == StatusFSM.QRCODE_DETECTED:
+            self._post_processing_reset_collected_labels()
+
+        facearea = self.detected_face.area
+        if facearea < self.FACEAREA_LEVEL_B:
+            self.__post_processing_face_level_a()
+        elif self.FACEAREA_LEVEL_B <= facearea < self.FACEAREA_LEVEL_C:
+            self.__post_processing_face_level_b()
+        else:
+            self.__post_processing_face_level_c()
+
+    def _post_processing_nothing(self):
+        match self.status:
+            case (
+                StatusFSM.DETECTING,
+                StatusFSM.FACE_DETECTED_LEVEL_A,
+                StatusFSM.FACE_DETECTED_LEVEL_C,
+            ):
+                self.status = StatusFSM.DETECTING
+            case (
+                StatusFSM.QRCODE_DETECTED,
+                StatusFSM.FACE_DETECTED_LEVEL_B,
+            ):
+                self._post_processing_reset_collected_labels()
+                self.status = StatusFSM.DETECTING
+            case StatusFSM.ALLOWED:
+                self._post_processing_check_allowed_status()
+            case StatusFSM.NOT_ALLOWED:
+                self._post_processing_check_not_allowed_time()
+
+    def _post_processing_decode_qrcode(self, detected_qrcode):
+        self._draw_detected_qrcode(self.detected_qrcode)
+        return self.detector_pyzbar.decode_qrcode(detected_qrcode)
+
+    def _post_processing_reset_collected_labels(self):
+        self.guest_recognition_iteration = 0
+        self.collected_labels = []
+
+    def _post_processing_check_allowed_status(self):
+        if self.start_passage_time:
+            self._post_processing_check_passage_time()
+        else:
+            self._post_processing_check_allowed_time()
+
+    def _post_processing_check_allowed_time(self):
+        allowed_time = time.time() - self.start_allowed_time
+        if allowed_time >= self.ALLOWED_TIME_SEC:
+            self._post_processing_close_gate()
+        else:
+            self._post_processing_passage_face()
+
+    def _post_processing_check_passage_time(self):
+        passage_time = time.time() - self.start_passage_time
+        if passage_time >= self.PASSAGE_TIME_SEC:
+            self._post_processing_close_gate()
+        else:
+            self.status = StatusFSM.ALLOWED
+
+    def _post_processing_passage_face(self):
+        # TODO: #30 Passage on right side case
+        if not self.detected_face:
+            self.status = StatusFSM.ALLOWED
+        elif (self.detected_face.rect[0] < 15) and (
+            self.detected_face.area > 250
+        ):  # TODO: #31 Passage face area settings
+            self.start_passage_time = time.time()
+            self.status = StatusFSM.ALLOWED
+        else:
+            self.status = StatusFSM.ALLOWED
+
+    def _post_processing_close_gate(self):
+        self.turnstile_gpio.close_gate()
+        self.status = StatusFSM.DETECTING
+
+    def _post_processing_check_not_allowed_label(self, label):
+        if label == self.label_not_allowed:
+            self._post_processing_check_not_allowed_time()
+        else:
+            self.status = StatusFSM.DETECTING
+
+    def _post_processing_check_not_allowed_time(self):
+        not_allowed_time = time.time() - self.start_not_allowed_time
+        if not_allowed_time >= self.NOT_ALLOWED_TIME_SEC:
+            self.status = StatusFSM.DETECTING
+        else:
+            self.status = StatusFSM.NOT_ALLOWED
+
+    def _post_processing_check_collected_labels(self):
+        if frequent_label := self._post_processing_frequent_label():
+            self._post_processing_check_skipass(frequent_label)
+        else:
+            self._post_processing_check_iteration(frequent_label)
+
+    def _post_processing_check_skipass(self, frequent_label):
+        if skipass := self._post_processing_db_skipasses(frequent_label):
+            self._post_processing_open_gate()
+        else:
+            self._post_processing_check_iteration(frequent_label)
+
+    def _post_processing_open_gate(self):
+        self.turnstile_gpio.open_gate()
+        self.start_allowed_time = time.time()
+        self.status = StatusFSM.ALLOWED
+
+    def _post_processing_db_skipass(self, frequent_label):
+        cursor = database.get_cursor()
+        table = "skipass"
+        datetime = f"datetime({time.time()},'unixepoch', 'localtime')"
+        select_condition = f"SELECT * FROM {table}"
+        where_condition = f"""
+        WHERE label = {frequent_label}
+        AND start_slot <= {datetime}
+        AND end_slot >= {datetime}"""
+        sql = f"{select_condition} {where_condition}"
+        cursor.execute(sql)
+        return cursor.fetchone()
+
+    def _post_processing_check_iteration(self, frequent_label):
+        if self.guest_recognition_iteration < self.ITERATION_COUNT:
+            self.guest_recognition_iteration += 1
+            self.status = StatusFSM.DETECTING
+        else:
+            self._post_processing_reset_collected_labels()
+            self.start_not_allowed_time = time.time()
+            self.label_not_allowed = frequent_label
+            self.status = StatusFSM.NOT_ALLOWED
+
+    def _post_processing_frequent_label(self):
+        collected_labels = self.collected_labels
+        self._post_processing_reset_collected_labels()
+        frequent_label = max(set(collected_labels), key=collected_labels.count)
+        return (
+            frequent_label
+            if collected_labels.count(frequent_label) >= self.REQUIRED_QUANTITY
+            else None
+        )
+
+    def __post_processing_face_level_a(self):
+        match self.status:
+            case (
+                StatusFSM.DETECTING,
+                StatusFSM.QRCODE_DETECTED,
+                StatusFSM.FACE_DETECTED_LEVEL_A,
+                StatusFSM.FACE_DETECTED_LEVEL_C,
+            ):
+                # TODO: calculate difference to Level B
+                self.status = StatusFSM.FACE_DETECTED_LEVEL_A
+            case StatusFSM.FACE_DETECTED_LEVEL_B:
+                self._post_processing_reset_collected_labels()
+                # TODO: calculate difference to Level B
+                self.status = StatusFSM.FACE_DETECTED_LEVEL_A
+            case StatusFSM.ALLOWED:
+                self._post_processing_check_allowed_status()
+            case StatusFSM.NOT_ALLOWED:
+                self._post_processing_check_not_allowed_time()
+
+    def __post_processing_face_level_b(self):
+        match self.status:
+            case (
+                StatusFSM.DETECTING,
+                StatusFSM.QRCODE_DETECTED,
+                StatusFSM.FACE_DETECTED_LEVEL_A,
+                StatusFSM.FACE_DETECTED_LEVEL_C,
+            ):
+                face_label = self._post_processing_face_recognition(
+                    self.detected_face.rect
+                )
+                self.collected_labels.append(face_label)
+                self.status = StatusFSM.FACE_DETECTED_LEVEL_B
+            case StatusFSM.FACE_DETECTED_LEVEL_B:
+                face_label = self._post_processing_face_recognition(
+                    self.detected_face.rect
+                )
+                self.collected_labels.append(face_label)
+                if len(self.collected_labels) >= self.LABELS_COUNT:
+                    self._post_processing_check_collected_labels()
+                else:
+                    self.status = StatusFSM.FACE_DETECTED_LEVEL_B
+
+            case StatusFSM.ALLOWED:
+                self._post_processing_check_allowed_status()
+            case StatusFSM.NOT_ALLOWED:
+                face_label = self._post_processing_face_recognition(
+                    self.detected_face.rect
+                )
+                self._post_processing_check_not_allowed_label(face_label)
+
+    def __post_processing_face_level_c(self):
+        match self.status:
+            case (
+                StatusFSM.DETECTING,
+                StatusFSM.QRCODE_DETECTED,
+                StatusFSM.FACE_DETECTED_LEVEL_A,
+                StatusFSM.FACE_DETECTED_LEVEL_C,
+            ):
+                # TODO: calculate difference to Level B
+                self.status = StatusFSM.FACE_DETECTED_LEVEL_C
+            case StatusFSM.FACE_DETECTED_LEVEL_B:
+                self._post_processing_reset_collected_labels()
+                # TODO: calculate difference to Level B
+                self.status = StatusFSM.FACE_DETECTED_LEVEL_C
+            case StatusFSM.ALLOWED:
+                self._post_processing_check_allowed_status()
+            case StatusFSM.NOT_ALLOWED:
+                self.status = StatusFSM.DETECTING
+
+    def _post_processing_face_recognition(self, face_coords):
+        ypred = self.embedder.get_embeddings(face_coords, self.cv_rgb)
+        face_label = self.svm_model.predict(ypred)
+        return self.label_encoder.inverse_transform(face_label)[0]
+
+    def _draw_detected_qrcode(self, detected_qrcode):
+        qrcode_rect = self.detector_pyzbar.get_coords_qrcode(detected_qrcode)
+        open_cv.output_qrcode(qrcode_rect)
 
     def _face_recognition(self, face_coords):
         ypred = self.embedder.get_embeddings(face_coords, self.cv_rgb)
         face_name = self.svm_model.predict(ypred)
         label = self.label_encoder.inverse_transform(face_name)[0]
-        self.labels.append(label)
 
-    def _most_frequent_label(self):
-        frequent_labels_count = int(
-            self.FACE_RECOGNITION_LABELS_COUNT * self.FACE_RECOGNITION_PERCENT / 100
-        )
-        if len(self.labels) >= self.FACE_RECOGNITION_LABELS_COUNT:
-            frequent_label = max(set(self.labels), key=self.labels.count)
-            self.guest_label = (
-                frequent_label
-                if self.labels.count(frequent_label) >= frequent_labels_count
-                else None
-            )
+    def _collect_label(self, label):
+        self.collected_labels.append(label)
+        if len(self.collected_labels) >= self.LABELS_COUNT:
+            frequent_label = self._get_frequent_label()
 
-            if self.guest_label:
-                self.status = StatusFSM.ALLOWED  # TODO: ask DB for allowed or not
+            if not frequent_label:
+                self.collected_labels = []
+                self._check_guest_recognition_iteration()
 
-        return int(len(self.labels) / self.FACE_RECOGNITION_LABELS_COUNT * 100)
+            # TODO: Check DB
+            self.passage_label = frequent_label
+
+    def _check_guest_recognition_iteration(self):
+        if self.guest_recognition_iteration > self.ITERATION_COUNT:
+            self.status = StatusFSM.NOT_ALLOWED
+            self.guest_recognition_iteration = 0
+        else:
+            self.guest_recognition_iteration += 1
+
+    # def _get_skipasses_by_label()
+
+    ########## REF UP ##########
 
     def _checking_time_allowed(self):
-        if not self.start_time_allowed:
-            self.start_time_allowed = time.time()
+        if not self.start_allowed_time:
+            self.start_allowed_time = time.time()
             self.turnstile_gpio.open_gate()
             return
 
-        checking_time = time.time() - self.start_time_allowed
+        checking_time = time.time() - self.start_allowed_time
         if checking_time >= 4:  # TODO: instead `10` second - diffrent value from `_set`
             self._reset_guest_recognition()
             self.turnstile_gpio.close_gate()
 
-    def _reset_guest_recognition(self):  # TODO: Rename
+    def _reset_guest_recognition(self):
         self.status = StatusFSM.SEARCHING
-        self.labels = []
-        self.guest_label = None
-        self.start_time_allowed = None
+        self.collected_labels = []
+        self.passage_label = None
+        self.start_allowed_time = None
 
-    def _set_state(self):
-        # status, label, progress, pull
-        state = {
-            "status": self.status.name,
-            "label": self.status.name,
-            "progress": 55,
-        }
-        match self.status:
-            case StatusFSM.SEARCHING:
-                pass
-            case StatusFSM.GET_CLOSER:
-                state["progress"] = self.progerss_value
-            case StatusFSM.STEP_BACK:
-                state["progress"] = self.progerss_value
-            case StatusFSM.QRCODE_SCANNING:
-                pass
-            case StatusFSM.FACE_RECOGNITION:
-                state["progress"] = self._most_frequent_label()
-                pass
-            case StatusFSM.ALLOWED:
-                state["label"] = self.guest_label
-                state["progress"] = 100
-                self._checking_time_allowed()
-                pass
-            case StatusFSM.NOT_ALLOWED:
-                pass
+    def _load_ml_data(self):
+        self.svm_model = pickle.load(open(_set.data.svm_model_path, "rb"))
+        self.faces_embeddings = np.load(_set.data.embeddings_path)
+        Y = self.faces_embeddings["arr_1"]
+        self.label_encoder.fit(Y)
+        self.status = StatusFSM.DETECTING
 
-        return state
-
-    def _processing(self):
-        """processing of all data in a loop with the received frame"""
-        state = {}
-        state["time"] = True  # Helpers
-        state["qr"] = get_qrcode_label()  # DB / Helpers
-        state["state"] = self._set_state()
-        return state
-        # labels['weather'] = get_weather() # DB / Helpers
-        # labels['resort'] = get_resort() # DB / Helpers
-        # labels['status'] =
-
-        # match self.status:
-        #     case StatusFSM.SEARCHING:
-        #         status_hex = _set.colors.LIGHT_BLUE_HEX
-        #     case StatusFSM.GET_CLOSER:
-        #         status_hex = _set.colors.BLUE_HEX
-        #     case StatusFSM.QRCODE_SCANNING:
-        #         self._most_frequent_label()
-        #         status_hex = _set.colors.MAGENTA_HEX
-        #     case StatusFSM.FACE_RECOGNITION:
-        #         self._most_frequent_label()
-        #         status_hex = _set.colors.MAGENTA_HEX
-        #     case StatusFSM.ALLOWED:
-        #         self._checking_time_allowed()
-        #         status_hex = _set.colors.GREEN_HEX
-        #     # case StatusFSM.NOT_ALLOWED:
-        #     #     status_hex = _set.colors.RED_HEX
-        #     # case StatusFSM.ERROR:
-        #     #     status_hex = _set.colors.RED_HEX
-
-        # text_top = self.status.value.upper()
-        # text_bottom = (
-        #     f"Welcome {self.guest_label}!"
-        #     if self.guest_label
-        #     else self._get_current_time()  # TODO: Change it on something (may be weather from fnugg)
-        # )
-
-    def run(self, mapped_array):
-        """Processing PiCamera frame"""
-        self._set_frame(mapped_array)
-        self._find_qrcode()
-        self._find_faces()
-        self._turnstile_performance()
-        return self._processing()
-
-    def __init__(self, frame_size):
-        if (not frame_size) or (len(frame_size) != 2):
-            raise NotCorrectFrameSizeGR(frame_size=frame_size)
-
-        # Detectors
-        self.detector_blazeface = DetectorBlazeface(
-            model_asset_path=_set.data.blazeface_path
+    def _draw_detect_face(self, detected_face):
+        open_cv.output_face(
+            frame=self.frame,
+            face=detected_face,
+            level_b=self.LEVEL_B,
+            level_c=self.LEVEL_C,
+            show_performance=self.SHOW_PERFORMANCE,
         )
-        self.detector_haarcascade = DetectorHaarcascade(
-            haarcascade_file=_set.data.haarcascade_path,
-            scale_factor=_set.fd.scale_factor,
-            min_neighbors=_set.fd.min_neighbors,
-            scalar_detect=_set.fd.scalar_detect,
-        )
-        self.detector_pyzbar = DetectorPyzbar()
 
-        # Embedder
-        self.embedder = Embedder()
+    def _set_app_settings(self):
+        app_settings = database.fetchall(
+            table="app_settings",
+            columns=[
+                "gr_face_detector",
+                "gr_level_a_side",
+                "gr_level_b_side",
+                "gr_level_c_side",
+                "gr_labels_count",
+                "gr_percent_required",
+                "gr_iteration_count",
+                "gr_allowed_time_sec",
+                "gr_passage_time_sec",
+                "gr_not_allowed_time_sec" "show_performance",
+            ],
+        )[0]
 
-        self.TURNSTILE_PERFORMANCE = None
-        self.AREA_START_RECOGNITION = None
-        self.AREA_STEP_BACK = None
-        self.FACE_RECOGNITION_LABELS_COUNT = None
-        self.FACE_RECOGNITION_PERCENT = None
+        self._set_face_detector(int(app_settings.get("gr_face_detector")))
 
-        self.fps = 0
-        self.fps_calc = "calculated"
-        self.start_time = time.time()
+        self.FACEAREA_LEVEL_A = int(app_settings.get("gr_level_a_side")) ** 2
+        self.FACEAREA_LEVEL_B = int(app_settings.get("gr_level_b_side")) ** 2
+        self.FACEAREA_LEVEL_C = int(app_settings.get("gr_level_c_side")) ** 2
+        self.LABELS_COUNT = int(app_settings.get("gr_labels_count"))
+        self.PERCENT_REQUIRED = int(app_settings.get("gr_percent_required"))
+        self.REQUIRED_QUANTITY = int(self.LABELS_COUNT * self.PERCENT_REQUIRED / 100)
+        self.ITERATION_COUNT = int(app_settings.get("gr_iteration_count"))
+        self.ALLOWED_TIME_SEC = int(app_settings.get("gr_allowed_time_sec"))
+        self.PASSAGE_TIME_SEC = int(app_settings.get("gr_passage_time_sec"))
+        self.NOT_ALLOWED_TIME_SEC = int(app_settings.get("gr_not_allowed_time_sec"))
+        self.SHOW_PERFORMANCE = bool(app_settings.get("show_performance"))
 
-        self.status = StatusFSM.SEARCHING
-        self.guest_label = None
-        self.start_time_allowed = None
-        self.labels = []
-        self.turnstile_gpio = TurnstileGPIO()
-        self.frame = None
-        self.width = frame_size[0]
-        self.height = frame_size[1]
-        self.cv_rgb = None
-        self.cv_gray = None
-
-        self.label_encoder = LabelEncoder()
-        self.svm_model = None
-        self.faces_embeddings = None
-
-        self._load_data_for_ml()
+    def _set_face_detector(self, gr_face_detector):
+        """
+        Set Face Detector by `gr_face_detector`:
+        - 0: Haarcascade
+        - 1: Blazeface
+        """
+        match gr_face_detector:
+            case 0:
+                self.face_detector = self.detector_haarcascade
+                self.FACE_DETECTOR = "Haarcascade"
+            case 1:
+                self.face_detector = self.detector_blazeface
+                self.FACE_DETECTOR = "Blazeface"
