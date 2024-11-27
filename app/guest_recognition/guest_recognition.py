@@ -65,7 +65,7 @@ class GuestRecognition:
         # FPS
         self.fps = 0
         self.fps_calc = "calculated"
-        self.start_time = time.time()
+        self.start_fps_time = time.time()
 
         # Set Settings
         self._set_app_settings()
@@ -103,6 +103,7 @@ class GuestRecognition:
     def _processing_detect_qrcode(self):
         if self.status == StatusFSM.ALLOWED:
             return
+
         return self.detector_pyzbar.detect_qrcode(self.cv_gray)
 
     def _processing_detect_face(self):
@@ -111,33 +112,34 @@ class GuestRecognition:
                 cv_frame = self.cv_gray
             case "Blazeface":
                 cv_frame = self.cv_rgb
+
         return self.face_detector.detect_face(cv_frame)
 
     def _processing_app_performance(self):
-        self.performance_params = dict()
-        self.performance_params["fps"] = self._processing_fps_performance()
-        self.performance_params["FD"] = self.FACE_DETECTOR
+        performance_params = dict()
+        performance_params["fps"] = self._processing_fps_performance()
+        performance_params["FD"] = self.FACE_DETECTOR
+
         open_cv.output_performance(
             frame=self.frame,
-            params=self.performance_params,
+            params=performance_params,
             width=self.width,
             height=self.height,
         )
 
     def _processing_fps_performance(self):
         self.fps += 1
-        elapsed_time = time.time() - self.start_time
+        elapsed_time = time.time() - self.start_fps_time
 
         if elapsed_time >= 1.0:
             self.fps_calc = self.fps / elapsed_time
             self.fps = 0
-            self.start_time = time.time()
+            self.start_fps_time = time.time()
 
         return f"{self.fps_calc:.2f}"
 
     # POST PROCESSING STAGE
     def _post_processing_stage(self):
-        # TODO: #29 `_post_processing_stage` set status, processing `processed_qr_label` & `processed_detected_face`
         if self.detected_qrcode:
             self._post_processing_qrcode()
         elif self.detected_face:
@@ -145,7 +147,15 @@ class GuestRecognition:
         else:
             self._post_processing_nothing()
 
-        self._output_postprocessing()
+        self._post_processing_output()
+
+    def _post_processing_output(self):
+        # TODO: #32 status, label, progress
+        self.processed_output = {
+            "status": self.status,
+            "label": self.status,
+            "progress": 50,
+        }
 
     def _post_processing_qrcode(self):
         match self.status:
@@ -412,10 +422,6 @@ class GuestRecognition:
             self.guest_recognition_iteration = 0
         else:
             self.guest_recognition_iteration += 1
-
-    # def _get_skipasses_by_label()
-
-    ########## REF UP ##########
 
     def _checking_time_allowed(self):
         if not self.start_allowed_time:
