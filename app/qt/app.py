@@ -1,17 +1,12 @@
 import sys
-from io import BytesIO
 
-from PySide2 import QtCore
-from PySide2.QtGui import QFontDatabase, QFont, QPixmap, QColor, QPainter, QBrush
+from PySide2.QtGui import QFontDatabase, QFont
 from PySide2.QtWidgets import (
     QApplication,
-    QHBoxLayout,
-    QLabel,
     QVBoxLayout,
     QWidget,
 )
 from picamera2 import Picamera2, MappedArray
-import qrcode
 
 from core.config import AppSettings
 from guest_recognition import GuestRecognition
@@ -33,14 +28,14 @@ pull_down = False
 
 def request_callback(request):
     global pull_up, pull_down
-    with MappedArray(request, "main") as m:
-        state = guest_recognition.run(mapped_array=m)
+    with MappedArray(request, "main") as mapped_array:
+        output = guest_recognition.run(mapped_array)
         left_widget.set_time()
-        left_widget.set_qrcode(state.get("qr"))
-        right_widget.set_weather("", "-13")  # TODO
-        right_widget.set_elevator("8", "8")  # TODO
-        right_widget.set_slope("10", "16")  # TODO
-        central_widget.set_state(state.get("state"))
+        left_widget.set_qrcode("https://skipass.io") # TODO: With websockets
+        right_widget.set_weather("", "-13")  # # TODO: With websockets
+        right_widget.set_elevator("8", "8")  # # TODO: With websockets
+        right_widget.set_slope("10", "16")  # # TODO: With websockets
+        central_widget.set_state(output)
 
 
 def cleanup():
@@ -70,7 +65,6 @@ qpicamera2 = QGlPicamera2(
     keep_ar=False,
 )
 
-# Left side screen
 left_widget = LeftWidget(qpicam2=qpicamera2, font=font)
 right_widget = RightWidget(qpicam2=qpicamera2, font=font, width=PICAM2_WIDTH)
 central_widget = CentralWidget(
@@ -81,7 +75,6 @@ central_widget_pull = central_widget.pull
 
 window = QWidget()
 window.setWindowTitle("turnstile-app")
-# window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
 
 
 layout_v = QVBoxLayout()
