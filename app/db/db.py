@@ -21,12 +21,13 @@ class DataBase:
         )
         self.conn.commit()
 
-    def update(self, table, column_values, row_id): # TODO:check #18 `update` method on correct work 
+    def update(
+        self, table, column_values, row_id
+    ):  # TODO:check #18 `update` method on correct work
         set_clause = ", ".join([f"{column} = ?" for column in column_values.keys()])
         values = list(column_values.values()) + [row_id]
         self.cursor.execute(f"UPDATE {table} SET {set_clause} WHERE id = ?", values)
         self.conn.commit()
-
 
     def fetchall(self, table, columns):
         columns_joined = ", ".join(columns)
@@ -56,7 +57,8 @@ class DataBase:
 
     def _check_db_exists(self):
         self.cursor.execute(
-            "SELECT name FROM sqlite_master " "WHERE type='table' AND name='config'"
+            "SELECT name FROM sqlite_master "
+            "WHERE type='table' AND name='app_settings'"
         )
         table_exists = self.cursor.fetchall()
         if table_exists:
