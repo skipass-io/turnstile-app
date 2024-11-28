@@ -1,3 +1,4 @@
+import math
 import cv2 as cv
 
 
@@ -22,28 +23,29 @@ def output_face(
     facearea_level_c,
     show_performance,
 ):
-    x, y, w, h = face
-    facearea = w * h
+    x, y, w, h = face["rect"]
+    facearea = face["area"]
+    faceside = int(math.sqrt(facearea))
     if facearea < facearea_level_b:
         color = (17, 151, 228)  # Blue
         label = (
-            f"{facearea} area: LEVEL A"
+            f"{faceside} side: LEVEL A"
             if show_performance
             else f"{int(facearea / facearea_level_b * 100)}% - get closer"
         )
         thinkness = 3
     elif facearea_level_b <= facearea < facearea_level_c:
         color = (194, 51, 255)  # Pink
-        label = f"{facearea} area: LEVEL B" if show_performance else f"Wait..."
+        label = f"{faceside} side: LEVEL B" if show_performance else f"Wait..."
         thinkness = 4
     else:
         color = (255, 255, 255)  # White
         label = (
-            f"{facearea} area: LEVEL C"
+            f"{faceside} side: LEVEL C"
             if show_performance
             else f"{int(facearea / facearea_level_c * 100)}% - get back"
         )
-        thinkness = -1
+        thinkness = 4
         x -= 25
         y -= 25
         w += 50
