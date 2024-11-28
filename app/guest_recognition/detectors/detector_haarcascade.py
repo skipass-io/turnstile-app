@@ -8,7 +8,7 @@ class DetectorHaarcascade:
         haarcascade_file,
         scale_factor,
         min_neighbors,
-        scalar_detect,
+        min_size,
     ):
         # Detector
         self.detector = cv.CascadeClassifier(haarcascade_file)
@@ -16,7 +16,7 @@ class DetectorHaarcascade:
         # Settings
         self.scale_factor = scale_factor
         self.min_neighbors = min_neighbors
-        self.scalar_detect = scalar_detect
+        self.min_size = min_size
 
     def detect_face(self, cv_gray):
         """
@@ -40,10 +40,7 @@ class DetectorHaarcascade:
             image=cv_gray,
             scaleFactor=self.scale_factor,
             minNeighbors=self.min_neighbors,
-            minSize=(
-                int(self.width / self.scalar_detect),
-                int(self.height / self.scalar_detect),
-            ),
+            minSize=self.min_size,
         )
 
     def _get_face_rect(self, detected_faces):
