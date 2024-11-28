@@ -70,7 +70,6 @@ right_widget = RightWidget(qpicam2=qpicamera2, font=font, width=PICAM2_WIDTH)
 central_widget = CentralWidget(
     qpicam2=qpicamera2, font=font, width=PICAM2_WIDTH, height=PICAM2_HEIGHT
 )
-central_widget_pull = central_widget.pull
 
 
 window = QWidget()
