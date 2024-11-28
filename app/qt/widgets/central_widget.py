@@ -23,10 +23,6 @@ class CentralWidget(QWidget):
         self.widget_width = 500
         self.widget_height = 125
 
-        self.is_pull_up = False
-        self.last_pull_up = None
-        self.delay_pull = 5
-
         self.status_style = {
             "GET_CLOSER": {
                 "color": "FFFFFF",
@@ -80,25 +76,13 @@ class CentralWidget(QWidget):
         self.progress.setValue(0)
         layout.addWidget(self.progress)
 
-        self.animation = QtCore.QPropertyAnimation(self, b"pos")
-        self.animation.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
-        self.animation.setDuration(1000)
 
         # Set layout for widget
         self._set_style_sheets()
         self.setLayout(layout)
-        self.move((self.width / 2) - int(self.widget_width / 2), self.height + 10)
+        self.move((self.width / 2) - int(self.widget_width / 2), self.height - (int(self.height / 4) + int(self.widget_height / 2)))
         self.setFixedSize(self.widget_width, self.widget_height)
 
-    def pull(self, up=False):
-        point_x = (self.width / 2) - int(self.widget_width / 2)
-        point_y = (
-            self.height - (int(self.height / 4) + int(self.widget_height / 2))
-            if up
-            else self.height + 10
-        )
-        self.animation.setEndValue(QtCore.QPoint(int(point_x), int(point_y)))
-        self.animation.start()
 
     def _set_style_sheets(self, status=None):
         style = self.status_style.get(status)
@@ -130,17 +114,11 @@ class CentralWidget(QWidget):
         )
 
         self.progress.setTextVisible(
-            False if status == "NOT_ALLOWED" or status == "SEARCHING" else True
+            False if status == "NOT_ALLOWED" or status == "DETECTING" else True
         )
 
     def set_state(self, state):
         status = state.get("status")
-        if status == "SEARCHING" and self.is_pull_up == True:
-            self.pull(False)
-            self.is_pull_up = False
-        elif status != "SEARCHING" and self.is_pull_up == False:
-            self.pull(True)
-            self.is_pull_up = True
 
         self._set_style_sheets(status)
         self.label_central.setText(state.get("label"))
