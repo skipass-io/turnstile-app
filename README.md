@@ -7,6 +7,8 @@ This application provides the ability to check frames from a video stream and va
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Run](#run)
+- [Finite-State Machine (FSM)](#finite-state-machine-fsm)
+
 
 ## Prerequisites
 
@@ -72,8 +74,22 @@ Use Poetry to install all the required dependencies listed in your pyproject.tom
 poetry install
 ```
 
-## Run `turnstile-app`
+## Run 
 
 ```
 python ./app/main.py
 ```
+
+## Finite-State Machine (FSM)
+
+The `turnstile-app` uses a **Finite-State Machine (FSM)** to manage the different states of the guest recognition process. The FSM is defined in the status_fsm.py file, and the following states are used:
+
+### States
+
+- **DETECTING**: This state indicates that the system is currently detecting a QR code or a face in the frame.
+- **QRCODE_DETECTED**: This state indicates that a QR code has been detected in the frame.
+- **FACE_DETECTED_LEVEL_A**: This state indicates that a face has been detected in the frame, but it is far away from the turnstile. The guest needs to get closer to start Face recognition.
+- **FACE_DETECTED_LEVEL_B**: This state indicates that a face has been detected in the frame, and it is at the turnstile level. The guest needs to stay in the same place so that his face is recognized.
+- **FACE_DETECTED_LEVEL_C**: This state indicates that a face has been detected in the frame, and it is very close to the turnstile. The guest needs to step back to start Face recognition
+- **ALLOWED**: This state indicates that the guest has been recognized and is allowed to pass through the turnstile.
+- **NOT_ALLOWED**: This state indicates that the guest has not been recognized and is not allowed to pass through the turnstile.

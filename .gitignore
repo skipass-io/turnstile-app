@@ -1,6 +1,5 @@
-# embeddings/
-# svm_model/
-database/
+*.lgd-nfy0
+*.sqlite
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

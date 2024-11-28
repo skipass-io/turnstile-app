@@ -5,25 +5,19 @@ class StatusFSM(Enum):
     """
     Statuses for GuestRecognition (Finite-State Machine)
     ---
-    - `NOT_READY`:
-    - `GET_READY`:
-    - `SEARCHING`:
-    - `GET_CLOSER`:
-    - `STEP_BACK`:
-    - `QRCODE_SCANNING`:
-    - `FACE_RECOGNITION`:
-    - `ALLOWED`:
-    - `NOT_ALLOWED`:
-    - `ERROR`:
+    - `DETECTING`: Detecting a QR code or a face in the frame
+    - `QRCODE_DETECTED`: QR-Code detected in the frame
+    - `FACE_DETECTED_LEVEL_A`: Face detected far away in the frame
+    - `FACE_DETECTED_LEVEL_B`: Face detected at Turnstile in the frame
+    - `FACE_DETECTED_LEVEL_C`: Face detected very close in the frame
+    - `ALLOWED`: Turnstile opens the gate after Guest Recognition
+    - `NOT_ALLOWED`: Turnstile keeps the gate closed after Guest Recognition
     """
 
-    NOT_READY = "NOT_READY"
-    GET_READY = "GET_READY"
-    SEARCHING = "SEARCHING"
-    GET_CLOSER = "GET_CLOSER"
-    STEP_BACK = "STEP_BACK"
-    QRCODE_SCANNING = "QRCODE_SCANNING"
-    FACE_RECOGNITION = "FACE_RECOGNITION"
+    DETECTING = "DETECTING"
+    QRCODE_DETECTED = "QRCODE_DETECTED"
+    FACE_DETECTED_LEVEL_A = "FACE_DETECTED_LEVEL_A"
+    FACE_DETECTED_LEVEL_B = "FACE_DETECTED_LEVEL_B"
+    FACE_DETECTED_LEVEL_C = "FACE_DETECTED_LEVEL_C"
     ALLOWED = "ALLOWED"
     NOT_ALLOWED = "NOT_ALLOWED"
-    ERROR = "ERROR"

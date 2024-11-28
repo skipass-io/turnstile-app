@@ -1,36 +1,52 @@
-create table config(
-    workday datetime primary key,
-    start_workday datetime,
-    end_workday datetime,
+CREATE TABLE app_settings(
+    id integer primary key autoincrement,
+    show_performance boolean not null,
+    gr_face_detector numeric not null,
+    gr_level_a_side numeric not null,
+    gr_level_b_side numeric not null,
+    gr_level_c_side numeric not null,
+    gr_labels_count numeric not null,
+    gr_percent_required numeric not null,
+    gr_iteration_count numeric not null,
+    gr_allowed_time_sec numeric not null,
+    gr_passage_time_sec numeric not null,
+    gr_not_allowed_time_sec numeric not null
+); 
+
+CREATE TABLE skipass(
+    id integer primary key autoincrement,
+    type integer not null,
+    start_slot timestamp not null,
+    end_slot timestamp not null,
+    label text not null
 );
 
-create table skipasses( 
-    label varchar(255) primary key,
-    start_slot datetime,
-    end_slot datetime,
-    type_slot integer,
+INSERT INTO app_settings (
+    show_performance, 
+    gr_face_detector,
+    gr_level_a_side, 
+    gr_level_b_side, 
+    gr_level_c_side, 
+    gr_labels_count, 
+    gr_percent_required, 
+    gr_iteration_count,
+    gr_allowed_time_sec,
+    gr_passage_time_sec,
+    gr_not_allowed_time_sec
+) values (
+    1, 
+    0, 
+    136, 
+    180, 
+    250, 
+    20, 
+    85, 
+    1,
+    6,
+    1.5,
+    10
 );
 
-create table passages( 
-    id integer primary key,
-    time_passage datetime,
-    FOREIGN KEY(skipass_label) REFERENCES skipasses(label),
-    is_open boolean,
-);
-
-insert into config(workday, start_workday, end_workday) 
-values 
-    ("2024-10-13", "2024-10-13 10:00:00", "2024-10-13 18:00:00"),
-    ("2024-10-14", "2024-10-14 10:00:00", "2024-10-14 18:00:00"),
-    ("2024-10-15", "2024-10-15 10:00:00", "2024-10-15 18:00:00"),
-    ("2024-10-16", "2024-10-16 10:00:00", "2024-10-16 18:00:00"),
-    ("2024-10-17", "2024-10-17 10:00:00", "2024-10-17 18:00:00"),
-    ("2024-10-18", "2024-10-18 10:00:00", "2024-10-18 18:00:00"),
-    ("2024-10-19", "2024-10-19 10:00:00", "2024-10-19 18:00:00"),
-    ("2024-10-20", "2024-10-20 10:00:00", "2024-10-20 18:00:00"),
-    ("2024-10-21", "2024-10-21 10:00:00", "2024-10-21 18:00:00");
-
-insert into skipasses (label, start_slot, end_slot, type_slot)
-values
-    ("kirill_zagoskin", "2024-10-13 10:00:00", "2024-10-13 16:00:00", 0);
-
+INSERT INTO skipass(type, start_slot, end_slot, label)
+VALUES
+    (0, '2024-11-28 10:00:00', '2024-11-28 18:00:00', 'kirill_zagoskin');
