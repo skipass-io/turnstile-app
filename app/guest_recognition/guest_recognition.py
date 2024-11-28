@@ -423,6 +423,7 @@ class GuestRecognition:
             facearea_level_b=self.FACEAREA_LEVEL_B,
             facearea_level_c=self.FACEAREA_LEVEL_C,
             show_performance=self.SHOW_PERFORMANCE,
+            input_label=self.label_not_allowed
         )
 
     def _set_app_settings(self):

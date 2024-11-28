@@ -22,6 +22,7 @@ def output_face(
     facearea_level_b,
     facearea_level_c,
     show_performance,
+    input_label = ""
 ):
     x, y, w, h = face["rect"]
     facearea = face["area"]
@@ -54,7 +55,7 @@ def output_face(
     cv.rectangle(frame, (x, y), (x + w, y + h), color, thinkness)
     cv.putText(
         frame,
-        label,
+        f"{input_label}{label}",
         (x + 10, y - 20),
         cv.FONT_HERSHEY_SIMPLEX,
         1,
