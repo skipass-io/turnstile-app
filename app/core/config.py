@@ -16,7 +16,7 @@ class AppSettings:
 
 # DB Settings
 class DBSQLiteSettings:
-    scaffold_sql = f"{BASE_DIR}/app/db/scaffod.sql"
+    scaffold_sql = f"{BASE_DIR}/app/db/scaffold.sql"
     db_name = "db.sqlite"
     db_path = f"{BASE_DIR}/data/database/{db_name}"
 
