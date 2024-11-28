@@ -10,7 +10,7 @@ CREATE TABLE app_settings(
     gr_iteration_count numeric not null,
     gr_allowed_time_sec numeric not null,
     gr_passage_time_sec numeric not null,
-    gr_not_allowed_time_sec numeric not null,
+    gr_not_allowed_time_sec numeric not null
 ); 
 
 CREATE TABLE skipass(
@@ -33,8 +33,7 @@ INSERT INTO app_settings (
     gr_allowed_time_sec,
     gr_passage_time_sec,
     gr_not_allowed_time_sec
-)
-values (
+) values (
     1, 
     0, 
     136, 
@@ -42,8 +41,12 @@ values (
     250, 
     20, 
     85, 
-    2,
+    1,
     6,
     1.5,
     10
-)
+);
+
+INSERT INTO skipass(type, start_slot, end_slot, label)
+VALUES
+    (0, '2024-11-28 10:00:00', '2024-11-28 18:00:00', 'kirill_zagoskin');
