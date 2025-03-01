@@ -49,6 +49,7 @@ picam2.configure(
         main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)},
     )
 )
+picam2.set_controls({"AwbMode":"Daylight"})
 
 
 # Add Popins font
