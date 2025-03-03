@@ -7,6 +7,7 @@ from PySide2.QtWidgets import (
     QWidget,
 )
 from picamera2 import Picamera2, MappedArray
+from libcamera import controls
 
 from core.config import AppSettings
 from guest_recognition import GuestRecognition
@@ -49,7 +50,7 @@ picam2.configure(
         main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)},
     )
 )
-picam2.set_controls({"AwbMode":"Daylight"})
+picam2.set_controls({"AwbMode":"Daylight", "AfMode": controls.AfModeEnum.Manual, "LensPosition": 0.0})
 
 
 # Add Popins font
