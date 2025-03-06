@@ -57,7 +57,7 @@ picam2.configure(
 # Control exposure_time
 picam2.set_controls({"AeEnable": True})
 picam2.set_controls({"ExposureValue": 0.0})
-picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Highlight})
+picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
 
 # Устанавливаем фиксированную экспозицию и усиление
     # Значения нужно будет подобрать экспериментально
