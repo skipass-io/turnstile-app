@@ -30,8 +30,8 @@ pull_down = False
 def request_callback(request):
     global pull_up, pull_down
     with MappedArray(request, "main") as mapped_array:
-        exposure_time = 16500  # 16 миллисекунд (эксперимент)
-        gain = 1.2  # Минимальное усиление
+        exposure_time = 9000  # 16 миллисекунд (эксперимент)
+        gain = 1.0  # Минимальное усиление
         picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
         
         output = guest_recognition.run(mapped_array)
