@@ -30,6 +30,10 @@ pull_down = False
 def request_callback(request):
     global pull_up, pull_down
     with MappedArray(request, "main") as mapped_array:
+        exposure_time = 16500  # 16 миллисекунд (эксперимент)
+        gain = 1.2  # Минимальное усиление
+        picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
+        
         output = guest_recognition.run(mapped_array)
         left_widget.set_time()
         left_widget.set_qrcode("https://skipass.io") # TODO: With websockets
@@ -57,16 +61,16 @@ picam2.set_controls({"AeEnable": False})
     # Значения нужно будет подобрать экспериментально
     # Экспозиция в микросекундах (меньше значение - темнее изображение)
     # exposure_time = 10000  # 10 миллисекунд (для яркого освещения попробуйте меньшие значения)
-exposure_time = 10000  # 16 миллисекунд (эксперимент)
+# exposure_time = 10000  # 16 миллисекунд (эксперимент)
 # exposure_time = 20000  # 20 миллисекунд (для среднего освещения)
     # exposure_time = 33000  # 33 миллисекунды (для более темных условий)
     
     # Аналоговое усиление (gain)
-gain = 1.0  # Минимальное усиление
+# gain = 1.0  # Минимальное усиление
 # gain = 2.0  # Среднее усиление
     # gain = 4.0  # Высокое усиление (может добавить шум)
 
-picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
+# picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
 
 ###
 picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
