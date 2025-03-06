@@ -50,7 +50,8 @@ picam2.configure(
         main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)},
     )
 )
-picam2.set_controls({"AwbMode":controls.AwbModeEnum.Daylight})
+picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
+picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
 
 
 # Add Popins font
