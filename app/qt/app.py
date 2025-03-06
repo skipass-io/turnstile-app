@@ -50,6 +50,24 @@ picam2.configure(
         main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)},
     )
 )
+# Control exposure_time
+picam2.set_controls({"AeEnable": False})
+
+# Устанавливаем фиксированную экспозицию и усиление
+    # Значения нужно будет подобрать экспериментально
+    # Экспозиция в микросекундах (меньше значение - темнее изображение)
+    # exposure_time = 10000  # 10 миллисекунд (для яркого освещения попробуйте меньшие значения)
+exposure_time = 20000  # 20 миллисекунд (для среднего освещения)
+    # exposure_time = 33000  # 33 миллисекунды (для более темных условий)
+    
+    # Аналоговое усиление (gain)
+    # gain = 1.0  # Минимальное усиление
+gain = 2.0  # Среднее усиление
+    # gain = 4.0  # Высокое усиление (может добавить шум)
+
+picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
+
+###
 picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
 picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
 
