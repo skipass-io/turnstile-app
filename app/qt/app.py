@@ -59,6 +59,7 @@ picam2.set_controls({"AeEnable": True})
 picam2.set_controls({"ExposureValue": 0.0})
 picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
 picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
+picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Short})
 
 # Устанавливаем фиксированную экспозицию и усиление
     # Значения нужно будет подобрать экспериментально
