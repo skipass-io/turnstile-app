@@ -54,7 +54,8 @@ picam2.configure(
         main={"size": (PICAM2_WIDTH, PICAM2_HEIGHT)},
     )
 )
-# Control exposure_time
+
+# rpi-camera-settings
 picam2.set_controls({"AeEnable": True})
 picam2.set_controls({"ExposureValue": 0.0})
 picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
