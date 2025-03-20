@@ -122,8 +122,10 @@ class GuestRecognition:
 
     def _processing_app_performance(self):
         performance_params = dict()
+        performance_params["brt"] = open_cv.get_brightness(self.frame)
         performance_params["fps"] = self._processing_fps_performance()
-        performance_params["FD"] = self.FACE_DETECTOR
+
+        # performance_params["FD"] = self.FACE_DETECTOR
 
         open_cv.output_performance(
             frame=self.frame,

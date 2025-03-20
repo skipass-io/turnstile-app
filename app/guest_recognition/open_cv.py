@@ -1,5 +1,6 @@
 import math
 import cv2 as cv
+import numpy as np 
 
 
 def output_performance(frame, params, width, height):
@@ -14,6 +15,11 @@ def output_performance(frame, params, width, height):
         3,
         cv.LINE_AA,
     )
+
+def get_brightness(frame):
+    """Calculate the average brightness of the image."""
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    return np.mean(gray)
 
 
 def output_face(
