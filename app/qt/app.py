@@ -60,7 +60,7 @@ picam2.set_controls({"AeEnable": True})
 picam2.set_controls({"ExposureValue": 0.0})
 picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
 picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
-picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Short})
+picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Long})
 
 # Устанавливаем фиксированную экспозицию и усиление
     # Значения нужно будет подобрать экспериментально
@@ -79,7 +79,7 @@ picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Short})
 
 ###
 picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
-picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
+# picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
 
 
 # Add Popins font
