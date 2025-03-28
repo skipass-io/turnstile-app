@@ -81,7 +81,7 @@ picam2.set_controls({"AeEnable": True})
 # picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
 
 ###
-picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
+#picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
 # picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
 
 
