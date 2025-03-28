@@ -57,9 +57,9 @@ picam2.configure(
 
 # rpi-camera-settings
 picam2.set_controls({"AeEnable": True})
-picam2.set_controls({"ExposureValue": 1.0})
-picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Normal})
-picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
+#picam2.set_controls({"ExposureValue": 1.0})
+#picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Normal})
+#picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
 #picam2.set_controls({"Contrast": 5.0})
 #picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
 #picam2.set_controls({"ExposureTime": 16000})
