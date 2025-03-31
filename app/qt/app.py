@@ -62,7 +62,7 @@ picam2.set_controls({"AeEnable": False})
 #picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
 picam2.set_controls({"Contrast": 1.0})
 picam2.set_controls({"Brightness": 0.5})
-#picam2.set_controls({"ExposureTime": 16000})
+picam2.set_controls({"ExposureTime": 6000})
 picam2.set_controls({"AnalogueGain": 1.0})
 #picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
 
