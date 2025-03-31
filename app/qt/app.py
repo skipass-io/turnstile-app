@@ -62,8 +62,8 @@ picam2.set_controls({"AeEnable": False})
 #picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
 picam2.set_controls({"Contrast": 1.0})
 picam2.set_controls({"Brightness": 1.0})
-picam2.set_controls({"ExposureTime": 1000})
-picam2.set_controls({"AnalogueGain": 2.0})
+picam2.set_controls({"ExposureTime": 500})
+picam2.set_controls({"AnalogueGain": 5.0})
 #picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
 
 # Устанавливаем фиксированную экспозицию и усиление
