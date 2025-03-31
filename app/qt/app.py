@@ -57,13 +57,14 @@ picam2.configure(
 
 # rpi-camera-settings
 picam2.set_controls({"AeEnable": False})
-picam2.set_controls({"ExposureValue": 4.0})
+#picam2.set_controls({"ExposureValue": 4.0})
 #picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
 #picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
 picam2.set_controls({"Contrast": 1.0})
+picam2.set_controls({"Brightness": 0.5})
+picam2.set_controls({"ExposureTime": 16000})
+picam2.set_controls({"AnalogueGain": 1.0})
 #picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
-#picam2.set_controls({"ExposureTime": 16000})
-#picam2.set_controls({"AnalogueGain": 3.0})
 
 # Устанавливаем фиксированную экспозицию и усиление
     # Значения нужно будет подобрать экспериментально
