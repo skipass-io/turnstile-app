@@ -1,4 +1,5 @@
 import sys
+import time
 
 from PySide2.QtGui import QFontDatabase, QFont
 from PySide2.QtWidgets import (
@@ -26,17 +27,27 @@ guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
 pull_up = False
 pull_down = False
 
+last_execution_time = time.time()
+
 
 def request_callback(request):
-    global pull_up, pull_down
+    global last_execution_time
+    current_time = time.time()
+    if current_time - last_execution_time > 2:
+        metadata = picam2.capture_metadata()
+        controls = {
+            c: metadata[c] for c in ["ExposureTime", "AnalogueGain", "ColourGains"]
+        }
+        picam2.set_controls(controls)
+        last_execution_time = current_time
     with MappedArray(request, "main") as mapped_array:
         # exposure_time = 9000  # 16 миллисекунд (эксперимент)
         # gain = 1.0  # Минимальное усиление
         # picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
-        
+
         output = guest_recognition.run(mapped_array)
         left_widget.set_time()
-        left_widget.set_qrcode("https://skipass.io") # TODO: With websockets
+        left_widget.set_qrcode("https://skipass.io")  # TODO: With websockets
         right_widget.set_weather("", "-13")  # # TODO: With websockets
         right_widget.set_elevator("8", "8")  # # TODO: With websockets
         right_widget.set_slope("10", "16")  # # TODO: With websockets
@@ -61,27 +72,27 @@ picam2.set_controls({"ExposureValue": 2.0})
 picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
 picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
 picam2.set_controls({"Contrast": 0.8})
-#picam2.set_controls({"ExposureTime": 6500})
+# picam2.set_controls({"ExposureTime": 6500})
 picam2.set_controls({"AnalogueGain": 1.0})
-#picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
+# picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
 
 # Устанавливаем фиксированную экспозицию и усиление
-    # Значения нужно будет подобрать экспериментально
-    # Экспозиция в микросекундах (меньше значение - темнее изображение)
-    # exposure_time = 10000  # 10 миллисекунд (для яркого освещения попробуйте меньшие значения)
+# Значения нужно будет подобрать экспериментально
+# Экспозиция в микросекундах (меньше значение - темнее изображение)
+# exposure_time = 10000  # 10 миллисекунд (для яркого освещения попробуйте меньшие значения)
 # exposure_time = 10000  # 16 миллисекунд (эксперимент)
 # exposure_time = 20000  # 20 миллисекунд (для среднего освещения)
-    # exposure_time = 33000  # 33 миллисекунды (для более темных условий)
-    
-    # Аналоговое усиление (gain)
+# exposure_time = 33000  # 33 миллисекунды (для более темных условий)
+
+# Аналоговое усиление (gain)
 # gain = 1.0  # Минимальное усиление
 # gain = 2.0  # Среднее усиление
-    # gain = 4.0  # Высокое усиление (может добавить шум)
+# gain = 4.0  # Высокое усиление (может добавить шум)
 
 # picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
 
 ###
-#picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
+# picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
 # picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
 
 
