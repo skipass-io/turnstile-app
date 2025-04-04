@@ -10,7 +10,7 @@ echo "Run turnstile-app from: $BASE_DIR"
 source "$BASE_DIR/env/bin/activate"
 
 # Run the Python script
-python "$BASE_DIR/app/main.py" "$@"
+python "$BASE_DIR/src/main.py" "$@"
 
 # Deactivate the virtual environment
 deactivate
