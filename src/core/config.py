@@ -28,7 +28,7 @@ class AppConfig(BaseModel):
 
 class DatabaseConfig(BaseModel):
     db_name: str = "db.sqlite"
-    db_path: Path = BASEDIR.parent / "data" / "database" / db_name
+    path: Path = BASEDIR.parent / "data" / "database" / db_name
     scaffold_sql: Path = BASEDIR / "db" / "scaffold.sql"
 
 
