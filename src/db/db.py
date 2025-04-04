@@ -1,13 +1,10 @@
 import sqlite3
-
-from core.config import DBSQLiteSettings
-
-_settings = DBSQLiteSettings()
+from core import settings
 
 
 class DataBase:
     def __init__(self):
-        self.conn = sqlite3.connect(_settings.db_path)
+        self.conn = sqlite3.connect(settings.db.path)
         self.cursor = self.conn.cursor()
 
         self._check_db_exists()
@@ -23,7 +20,7 @@ class DataBase:
 
     def update(
         self, table, column_values, row_id
-    ):  # TODO:check #18 `update` method on correct work
+    ):
         set_clause = ", ".join([f"{column} = ?" for column in column_values.keys()])
         values = list(column_values.values()) + [row_id]
         self.cursor.execute(f"UPDATE {table} SET {set_clause} WHERE id = ?", values)
@@ -46,11 +43,11 @@ class DataBase:
         self.cursor.execute(f"delete from {table} where id={row_id}")
         self.conn.commit()
 
-    def get_cursor(self):  # TODO: #17 check `get_cursor` method on correct work
+    def get_cursor(self):
         return self.cursor
 
     def _init_db(self):
-        with open(_settings.scaffold_sql, "r") as f:
+        with open(settings.db.scaffold_sql, "r") as f:
             scaffold_sql = f.read()
         self.cursor.executescript(scaffold_sql)
         self.conn.commit()
