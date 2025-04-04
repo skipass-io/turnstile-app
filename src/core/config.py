@@ -1,8 +1,6 @@
 from pathlib import Path
 import os
 
-# settings for tensorflow logging
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 BASE_DIR = Path(__file__).parent.parent.parent
 
