@@ -51,3 +51,5 @@ class Settings(BaseSettings):
     app: AppConfig = AppConfig()
     db: DatabaseConfig = DatabaseConfig()
     fd: FaceDetectorConfig = FaceDetectorConfig()
+
+settings = Settings()
