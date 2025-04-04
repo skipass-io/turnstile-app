@@ -1,67 +1,53 @@
 from pathlib import Path
-import os
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# ./src - basedir
+BASEDIR = Path(__file__).parent.parent.resolve()
+DONTENV_TEMPLATE = BASEDIR / ".env.template"
+DONTENV = BASEDIR / ".env"
 
 
-BASE_DIR = Path(__file__).parent.parent.parent
+# COLORS
+MAGENTA_HEX = "9400D3"
+MAGENTA_RGB = (148, 0, 211)
+LIGHT_BLUE_HEX = "ADDBF6"
+LIGHT_BLUE_RGB = (202, 80, 82)
+BLUE_HEX = "34A9ED"
+BLUE_RBG = (52, 169, 237)
+GREEN_HEX = "22CD69"
+GREEN_RBG = (34, 205, 105)
+RED_HEX = "ED451F"
+RED_RBG = (237, 69, 31)
 
 
-# App Settings
-class AppSettings:
-    # Font Settings
-    font_name = "Poppins-SemiBold.ttf"
-    font_path = f"{BASE_DIR}/app/assets/fonts/{font_name}"
+class AppConfig(BaseModel):
+    font_name: str = "Poppins-SemiBold.ttf"
+    font_path: Path = BASEDIR / "assets" / "fonts" / font_name
 
 
-# DB Settings
-class DBSQLiteSettings:
-    scaffold_sql = f"{BASE_DIR}/app/db/scaffold.sql"
-    db_name = "db.sqlite"
-    db_path = f"{BASE_DIR}/data/database/{db_name}"
+class DatabaseConfig(BaseModel):
+    db_name: str = "db.sqlite"
+    db_path: Path = BASEDIR.parent / "data" / "database" / db_name
+    scaffold_sql: Path = BASEDIR / "db" / "scaffold.sql"
 
 
-# Guest Recognition Settings
-class FaceDetectorSettings:
-    scale_factor = 1.1  # 1.3
-    min_neighbors = 5
-    scalar_detect = 7
-    scalar_recognition = 3
+class FaceDetectorConfig(BaseModel):
+    haarcascade_file: str = "haarcascade_frontalface_default.xml"
+    haarcascade_path: Path = BASEDIR / "assets" / "models" / haarcascade_file
+    scale_factor: float = 1.1
+    min_neighbors: int = 5
+    scalar_detect: int = 7
+    scalar_recognition: int = 3
 
 
-class GuestRecognitionColors:
-    # MAGENTA
-    MAGENTA_HEX = "9400D3"
-    MAGENTA_RGB = (148, 0, 211)
-    # LIGHT_BLUE
-    LIGHT_BLUE_HEX = "ADDBF6"
-    LIGHT_BLUE_RGB = (202, 80, 82)
-    # BLUE
-    BLUE_HEX = "34A9ED"
-    BLUE_RBG = (52, 169, 237)
-    # GREEN
-    GREEN_HEX = "22CD69"
-    GREEN_RBG = (34, 205, 105)
-    # RED
-    RED_HEX = "ED451F"
-    RED_RBG = (237, 69, 31)
-
-
-class GuestRecognitionData:
-    DATA_DIR = f"{BASE_DIR}/data"
-
-    blazeface_file = "detector.tflite"
-    blazeface_path = f"{BASE_DIR}/app/assets/models/{blazeface_file}"
-
-    haarcascade_file = "haarcascade_frontalface_default.xml"
-    haarcascade_path = f"{BASE_DIR}/app/assets/models/{haarcascade_file}"
-
-    svm_model_file = "svm_model_160x160.pkl"
-    svm_model_path = f"{DATA_DIR}/svm_model/{svm_model_file}"
-
-    embeddings_file = "embeddings.npz"
-    embeddings_path = f"{DATA_DIR}/embeddings/{embeddings_file}"
-
-
-class GuestRecognitionSettings:
-    fd = FaceDetectorSettings()
-    colors = GuestRecognitionColors()
-    data = GuestRecognitionData()
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=(DONTENV_TEMPLATE, DONTENV),
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_prefix="APP_CONFIG__",
+    )
+    app: AppConfig = AppConfig()
+    db: DatabaseConfig = DatabaseConfig()
+    fd: FaceDetectorConfig = FaceDetectorConfig()
