@@ -12,6 +12,8 @@ opencv-python-headless = "^4.10.0.84"
 qrcode = {extras = ["pil"], version = "^8.0"}
 typer = "^0.12.5"
 requests = "^2.32.3"
+pydantic = "^2.11.2"
+pydantic-settings = "^2.8.1"
 
 
 [build-system]
