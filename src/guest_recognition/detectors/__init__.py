@@ -1,6 +1,8 @@
-__all__ = ["DetectorBlazeface", "DetectorHaarcascade", "DetectorPyzbar"]
+__all__ = (
+    "DetectorHaarcascade",
+    "DetectorPyzbar",
+)
 
 
-from .detector_blazeface import DetectorBlazeface
-from .detector_haarcascade import DetectorHaarcascade
-from .detector_pyzbar import DetectorPyzbar
+from .haarcascade import DetectorHaarcascade
+from .pyzbar import DetectorPyzbar
