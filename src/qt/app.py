@@ -10,11 +10,10 @@ from picamera2 import Picamera2, MappedArray
 from libcamera import controls
 
 from core import settings
-from core.config import AppSettings
 from guest_recognition import GuestRecognition
 from qt.picamera_controls import PicameraContols
-from .widgets import QGlPicamera2, LeftWidget, CentralWidget
-from .helpers import get_screen_params
+from qt.widgets import QGlPicamera2, LeftWidget, CentralWidget
+from qt.helpers import get_screen_params
 
 
 app = QApplication(sys.argv)
