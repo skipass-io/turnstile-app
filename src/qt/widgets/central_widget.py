@@ -3,6 +3,8 @@ from PySide2 import QtCore
 from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import QProgressBar, QLabel, QVBoxLayout, QWidget
 
+from guest_recognition import StatusFSM
+
 
 class CentralWidget(QWidget):
     def __init__(self, qpicam2, font, width, height):
@@ -24,36 +26,51 @@ class CentralWidget(QWidget):
         self.widget_height = 125
 
         self.status_style = {
-            "GET_CLOSER": {
-                "color": "FFFFFF",
-                "sec_color": "ADDBF6",
-                "bg_color": "1197E4",
-            },
-            "STEP_BACK": {
-                "color": "1197E4",
-                "sec_color": "ADDBF6",
-                "bg_color": "FFFFFF",
-            },
-            "QRCODE_SCANNING": {
-                "color": "FFFFFF",
-                "sec_color": "63008D",
-                "bg_color": "C233FF",
-            },
-            "FACE_RECOGNITION": {
-                "color": "FFFFFF",
-                "sec_color": "63008D",
-                "bg_color": "C233FF",
-            },
-            "ALLOWED": {
-                "color": "FFFFFF",
-                "sec_color": "004C20",
-                "bg_color": "22CD69",
-            },
-            "NOT_ALLOWED": {
+            StatusFSM.NOT_ACTIVE: {
                 "color": "ED451F",
                 "sec_color": "000000",
                 "bg_color": "FFFFFF",
             },
+            StatusFSM.FACE_DETECTED_LEVEL_A: {
+                "color": "FFFFFF",
+                "sec_color": "ADDBF6",
+                "bg_color": "1197E4",
+            },
+            StatusFSM.FACE_DETECTED_LEVEL_C: {
+                "color": "1197E4",
+                "sec_color": "ADDBF6",
+                "bg_color": "FFFFFF",
+            },
+            StatusFSM.QRCODE_DETECTED: {
+                "color": "FFFFFF",
+                "sec_color": "63008D",
+                "bg_color": "C233FF",
+            },
+            StatusFSM.FACE_DETECTED_LEVEL_B: {
+                "color": "FFFFFF",
+                "sec_color": "63008D",
+                "bg_color": "C233FF",
+            },
+            StatusFSM.ALLOWED: {
+                "color": "FFFFFF",
+                "sec_color": "004C20",
+                "bg_color": "22CD69",
+            },
+            StatusFSM.NOT_ALLOWED: {
+                "color": "ED451F",
+                "sec_color": "000000",
+                "bg_color": "FFFFFF",
+            },
+        }
+
+        self.status_text = {
+            StatusFSM.NOT_ACTIVE: "TURNSTILE IS NOT ACTIVATE",
+            StatusFSM.FACE_DETECTED_LEVEL_A: "GÅ NÆRMERE",
+            StatusFSM.FACE_DETECTED_LEVEL_C: "GÅ BAKOVER",
+            StatusFSM.QRCODE_DETECTED: "SØKER",
+            StatusFSM.FACE_DETECTED_LEVEL_B: "SØKER",
+            StatusFSM.ALLOWED: "ADGANG TILLAT",
+            StatusFSM.NOT_ALLOWED: "IKKE FUNNET",
         }
 
         self._init_UI()
@@ -76,13 +93,14 @@ class CentralWidget(QWidget):
         self.progress.setValue(0)
         layout.addWidget(self.progress)
 
-
         # Set layout for widget
         self._set_style_sheets()
         self.setLayout(layout)
-        self.move((self.width / 2) - int(self.widget_width / 2), self.height - (int(self.height / 4) + int(self.widget_height / 2)))
+        self.move(
+            (self.width / 2) - int(self.widget_width / 2),
+            self.height - (int(self.height / 4) + int(self.widget_height / 2)),
+        )
         self.setFixedSize(self.widget_width, self.widget_height)
-
 
     def _set_style_sheets(self, status=None):
         style = self.status_style.get(status)
@@ -113,13 +131,9 @@ class CentralWidget(QWidget):
             """
         )
 
-        self.progress.setTextVisible(
-            False if status == "NOT_ALLOWED" or status == "DETECTING" else True
-        )
+        self.progress.setTextVisible(True)
 
-    def set_state(self, state):
-        status = state.get("status")
-
+    def set_state(self, status, progress):
         self._set_style_sheets(status)
-        self.label_central.setText(state.get("label"))
-        self.progress.setValue(state.get("progress"))
+        self.label_central.setText(self.status_text.get(status))
+        self.progress.setValue(progress)
