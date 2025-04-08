@@ -23,7 +23,7 @@ class LeftWidget(QWidget):
 
     def _init_UI(self, font):
         # Main colors
-        color = "1197E4" 
+        color = "000000" 
         bg_color = "FFFFFF"
 
         # Set Layout
