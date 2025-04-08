@@ -1,11 +1,9 @@
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
+from typing import Optional
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-# ./src - basedir
-BASEDIR = Path(__file__).parent.parent.resolve()
-DONTENV_TEMPLATE = BASEDIR / ".env.template"
-DONTENV = BASEDIR / ".env"
 
 
 # COLORS
@@ -21,15 +19,81 @@ RED_HEX = "ED451F"
 RED_RBG = (237, 69, 31)
 
 
+# ./src - basedir
+BASEDIR = Path(__file__).parent.parent.resolve()
+DONTENV_TEMPLATE = BASEDIR / ".env.template"
+DONTENV = BASEDIR / ".env"
+
+
+class AeConstraintModeEnum(str, Enum):
+    NORMAL = "Normal"
+    HIGHLIGHT = "Highlight"
+    SHADOWS = "Shadows"
+    CUSTOM = "Custom"
+
+
+class AeExposureModeEnum(str, Enum):
+    NORMAL = "Normal"
+    SHORT = "Short"
+    LONG = "Long"
+    CUSTOM = "Custom"
+
+
+class AeMeteringModeEnum(str, Enum):
+    CENTRE_WEIGHTED = "CentreWeighted"
+    SPOT = "Spot"
+    MATRIX = "Matrix"
+    CUSTOM = "Custom"
+
+
 class AppConfig(BaseModel):
+    server_domain: str
+    recruitment_form_url: str
+
+
+class QTConfig(BaseModel):
     font_name: str = "Poppins-SemiBold.ttf"
     font_path: Path = BASEDIR / "assets" / "fonts" / font_name
+
+
+class GPIOConfig(BaseModel):
+    pin_gate: str
+
+class TurnstileDefaultConfig(BaseModel):
+    id: int = 0
+    created_at: datetime = datetime.now()
+    turnstile_id: int = 0
+    show_perfomance: bool
+    gr_level_a: int
+    gr_level_b: int
+    gr_level_c: int
+    update_interval: int
+    camera_environment_state_id: Optional[int] = None
+    ae_constraint_mode: AeConstraintModeEnum = AeConstraintModeEnum.NORMAL
+    ae_enable: bool
+    ae_exposure_mode: AeExposureModeEnum = AeExposureModeEnum.NORMAL
+    analogue_gain: float
+    ae_metering_mode: AeMeteringModeEnum = AeMeteringModeEnum.CENTRE_WEIGHTED
+    brightness: float
+    contrast: float
+    exposure_time: int
+    exposure_value: float
+
+
+class TurnstileConfig(BaseModel):
+    gpio: GPIOConfig
+    default: TurnstileDefaultConfig
+    
+    passage_time_limit: int
+
+    # Settigs
+    
 
 
 class DatabaseConfig(BaseModel):
     db_name: str = "db.sqlite"
     path: Path = BASEDIR.parent / "data" / "database" / db_name
-    scaffold_sql: Path = BASEDIR / "db" / "scaffold.sql"
+    scaffold_sql: Path = BASEDIR / "core" / "scaffold.sql"
 
 
 class FaceDetectorConfig(BaseModel):
@@ -48,8 +112,11 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
         env_prefix="APP_CONFIG__",
     )
-    app: AppConfig = AppConfig()
+    app: AppConfig
+    qt: QTConfig = QTConfig()
+    turnstile: TurnstileConfig
     db: DatabaseConfig = DatabaseConfig()
     fd: FaceDetectorConfig = FaceDetectorConfig()
+
 
 settings = Settings()
