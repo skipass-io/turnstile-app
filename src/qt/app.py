@@ -9,38 +9,36 @@ from PySide2.QtWidgets import (
 from picamera2 import Picamera2, MappedArray
 from libcamera import controls
 
+from core import settings
 from core.config import AppSettings
 from guest_recognition import GuestRecognition
-from .widgets import QGlPicamera2, LeftWidget, RightWidget, CentralWidget
+from qt.picamera_controls import PicameraContols
+from .widgets import QGlPicamera2, LeftWidget, CentralWidget
 from .helpers import get_screen_params
 
 
 app = QApplication(sys.argv)
-app_settings = AppSettings()
-
-
+picam_controls = PicameraContols()
 PICAM2_WIDTH, PICAM2_HEIGHT = get_screen_params(app)
 
-guest_recognition = GuestRecognition(frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT))
-
-pull_up = False
-pull_down = False
+gr = GuestRecognition(
+    frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT),
+)
 
 
 def request_callback(request):
-    global pull_up, pull_down
     with MappedArray(request, "main") as mapped_array:
-        # exposure_time = 9000  # 16 миллисекунд (эксперимент)
-        # gain = 1.0  # Минимальное усиление
-        # picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
-        
-        output = guest_recognition.run(mapped_array)
+        gr.run(mapped_array)
         left_widget.set_time()
-        left_widget.set_qrcode("https://skipass.io") # TODO: With websockets
-        right_widget.set_weather("", "-13")  # # TODO: With websockets
-        right_widget.set_elevator("8", "8")  # # TODO: With websockets
-        right_widget.set_slope("10", "16")  # # TODO: With websockets
-        central_widget.set_state(output)
+        left_widget.set_qrcode(settings.app.recruitment_form_url)
+        central_widget.set_state(
+            status=gr.status,
+            progress=gr.progress,
+        )
+        if controls := picam_controls.is_new_settings(
+            turnstile_settings=gr.turnstile_settings
+        ):
+            picam2.set_controls(controls)
 
 
 def cleanup():
@@ -55,38 +53,8 @@ picam2.configure(
     )
 )
 
-# rpi-camera-settings
-picam2.set_controls({"AeEnable": True})
-picam2.set_controls({"ExposureValue": 2.0})
-picam2.set_controls({"AeConstraintMode": controls.AeConstraintModeEnum.Shadows})
-picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
-picam2.set_controls({"Contrast": 0.8})
-#picam2.set_controls({"ExposureTime": 6500})
-picam2.set_controls({"AnalogueGain": 1.0})
-#picam2.set_controls({"AeExposureMode": controls.AeExposureModeEnum.Normal})
-
-# Устанавливаем фиксированную экспозицию и усиление
-    # Значения нужно будет подобрать экспериментально
-    # Экспозиция в микросекундах (меньше значение - темнее изображение)
-    # exposure_time = 10000  # 10 миллисекунд (для яркого освещения попробуйте меньшие значения)
-# exposure_time = 10000  # 16 миллисекунд (эксперимент)
-# exposure_time = 20000  # 20 миллисекунд (для среднего освещения)
-    # exposure_time = 33000  # 33 миллисекунды (для более темных условий)
-    
-    # Аналоговое усиление (gain)
-# gain = 1.0  # Минимальное усиление
-# gain = 2.0  # Среднее усиление
-    # gain = 4.0  # Высокое усиление (может добавить шум)
-
-# picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": gain})
-
-###
-#picam2.set_controls({"AwbMode": controls.AwbModeEnum.Daylight})
-# picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
-
-
 # Add Popins font
-font_id = QFontDatabase.addApplicationFont(app_settings.font_path)
+font_id = QFontDatabase.addApplicationFont(settings.qt.font_path)
 font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
 font = QFont(font_name, 30)
 
@@ -99,10 +67,15 @@ qpicamera2 = QGlPicamera2(
     keep_ar=False,
 )
 
-left_widget = LeftWidget(qpicam2=qpicamera2, font=font)
-right_widget = RightWidget(qpicam2=qpicamera2, font=font, width=PICAM2_WIDTH)
+left_widget = LeftWidget(
+    qpicam2=qpicamera2,
+    font=font,
+)
 central_widget = CentralWidget(
-    qpicam2=qpicamera2, font=font, width=PICAM2_WIDTH, height=PICAM2_HEIGHT
+    qpicam2=qpicamera2,
+    font=font,
+    width=PICAM2_WIDTH,
+    height=PICAM2_HEIGHT,
 )
 
 
