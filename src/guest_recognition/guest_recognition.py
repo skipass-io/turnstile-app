@@ -1,4 +1,4 @@
-from guest_recognition import StatusFSM
+from guest_recognition.status_fsm import StatusFSM
 from guest_recognition.stages import PreProcessing, Processing, PostProcessing
 
 
