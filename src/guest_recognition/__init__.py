@@ -1,4 +1,3 @@
-__all__ = ("GuestRecognition", "StatusFSM")
+__all__ = ("GuestRecognition", )
 
 from .guest_recognition import GuestRecognition
-from .status_fsm import StatusFSM
