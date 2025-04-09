@@ -1,3 +1,3 @@
-__all__ = ["exec"]
+__all__ = ("exec",)
 
 from .app import exec

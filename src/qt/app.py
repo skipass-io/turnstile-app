@@ -17,13 +17,13 @@ from qt.helpers import get_screen_params
 
 
 app = QApplication(sys.argv)
-picam_controls = PicameraContols()
 PICAM2_WIDTH, PICAM2_HEIGHT = get_screen_params(app)
 
 gr = GuestRecognition(
     frame_size=(PICAM2_WIDTH, PICAM2_HEIGHT),
 )
 
+picam_controls = PicameraContols()
 
 def request_callback(request):
     with MappedArray(request, "main") as mapped_array:
@@ -53,7 +53,7 @@ picam2.configure(
 )
 
 # Add Popins font
-font_id = QFontDatabase.addApplicationFont(settings.qt.font_path)
+font_id = QFontDatabase.addApplicationFont(str(settings.qt.font_path))
 font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
 font = QFont(font_name, 30)
 
