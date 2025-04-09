@@ -1,4 +1,5 @@
 import functools
+import math
 import cv2 as cv
 
 
@@ -28,7 +29,7 @@ class DetectorHaarcascade:
         if len(detected_faces) == 0:
             return
         rect = self._get_face_rect(detected_faces)
-        detected_face = {"rect": rect, "area": rect[2] * rect[3]}
+        detected_face = {"rect": rect, "side": int(math.sqrt(rect[2] * rect[3]))}
         return detected_face
 
     def _detect_faces(self, cv_gray):
