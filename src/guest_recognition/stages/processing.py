@@ -1,7 +1,7 @@
 import cv2 as cv
 
 from core import settings
-from guest_recognition import StatusFSM
+from guest_recognition.status_fsm import StatusFSM
 from guest_recognition.detectors import DetectorPyzbar, DetectorHaarcascade
 from guest_recognition.utils import OpenCV
 
@@ -11,7 +11,7 @@ class Processing:
         # Detectors
         self.pyzbar = DetectorPyzbar()
         self.haarcascade = DetectorHaarcascade(
-            haarcascade_file=settings.fd.haarcascade_file,
+            haarcascade_file=str(settings.fd.haarcascade_path),
             scale_factor=settings.fd.scale_factor,
             min_neighbors=settings.fd.min_neighbors,
             min_size=(136, 136),
@@ -36,8 +36,8 @@ class Processing:
             cv_gray=cv_gray,
         )
 
-        self._detect_qrcode()
-        self._detect_face()
+        self.detected_qrcode = self._detect_qrcode()
+        self.detected_face = self._detect_face()
 
         if self.detected_qrcode:
             self._show_detected_qrcode()
@@ -55,8 +55,8 @@ class Processing:
         self.cv_gray = cv_gray
 
     def _detect_qrcode(self):
-        if self.status != StatusFSM.NOT_ACTIVE:
-            return
+        # if self.status != StatusFSM.NOT_ACTIVE:
+        #     return
 
         return self.pyzbar.detect_qrcode(self.cv_gray)
 
@@ -64,7 +64,7 @@ class Processing:
         if self.status == StatusFSM.NOT_ACTIVE:
             return
 
-        return self.face_detector.detect_face(self.cv_gray)
+        return self.haarcascade.detect_face(self.cv_gray)
 
     def _show_detected_qrcode(self):
         qrcode_rect = self.pyzbar.get_coords_qrcode(self.detected_qrcode)
@@ -76,5 +76,5 @@ class Processing:
     def _show_detected_face(self):
         self.open_cv.output_face(
             frame=self.frame,
-            face=self._detect_face,
+            face=self.detected_face,
         )
