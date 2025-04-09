@@ -10,7 +10,7 @@ class TurnstileSettings(BaseModel):
     id: int
     created_at: datetime
     turnstile_id: int
-    show_perfomance: bool
+    show_performance: bool
     gr_level_a: int
     gr_level_b: int
     gr_level_c: int
