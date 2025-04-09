@@ -59,11 +59,12 @@ class QTConfig(BaseModel):
 class GPIOConfig(BaseModel):
     pin_gate: str
 
+
 class TurnstileDefaultConfig(BaseModel):
     id: int = 0
     created_at: datetime = datetime.now()
     turnstile_id: int = 0
-    show_perfomance: bool
+    show_performance: bool
     gr_level_a: int
     gr_level_b: int
     gr_level_c: int
@@ -83,11 +84,10 @@ class TurnstileDefaultConfig(BaseModel):
 class TurnstileConfig(BaseModel):
     gpio: GPIOConfig
     default: TurnstileDefaultConfig
-    
+
     passage_time_limit: int
 
     # Settigs
-    
 
 
 class DatabaseConfig(BaseModel):
