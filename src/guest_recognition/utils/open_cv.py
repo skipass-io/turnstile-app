@@ -37,10 +37,20 @@ class OpenCV:
         face,
     ):
         x, y, w, h = face["rect"]
-        facearea = face["area"]
-        faceside = int(math.sqrt(facearea))
+        faceside = face["side"]
         color = (194, 51, 255)  # Pink
         thinkness = 4
+
+        cv.putText(
+            frame,
+            f"side: {faceside}",
+            (x + 10, y - 20),
+            cv.FONT_HERSHEY_SIMPLEX,
+            1,
+            color,
+            3,
+            cv.LINE_AA,
+        )
 
         cv.rectangle(frame, (x, y), (x + w, y + h), color, thinkness)
 
