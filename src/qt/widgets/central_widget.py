@@ -3,7 +3,7 @@ from PySide2 import QtCore
 from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import QProgressBar, QLabel, QVBoxLayout, QWidget
 
-from guest_recognition import StatusFSM
+from guest_recognition.status_fsm import StatusFSM
 
 
 class CentralWidget(QWidget):
@@ -30,6 +30,11 @@ class CentralWidget(QWidget):
                 "color": "ED451F",
                 "sec_color": "000000",
                 "bg_color": "FFFFFF",
+            },
+            StatusFSM.DETECTING: {
+                "color": "FFFFFF",
+                "sec_color": "ADDBF6",
+                "bg_color": "1197E4",
             },
             StatusFSM.FACE_DETECTED_LEVEL_A: {
                 "color": "FFFFFF",
@@ -64,11 +69,12 @@ class CentralWidget(QWidget):
         }
 
         self.status_text = {
-            StatusFSM.NOT_ACTIVE: "TURNSTILE IS NOT ACTIVATE",
+            StatusFSM.NOT_ACTIVE: "NOT_ACTIVE",
             StatusFSM.FACE_DETECTED_LEVEL_A: "GÅ NÆRMERE",
             StatusFSM.FACE_DETECTED_LEVEL_C: "GÅ BAKOVER",
+            StatusFSM.DETECTING: "SØKER",
             StatusFSM.QRCODE_DETECTED: "SØKER",
-            StatusFSM.FACE_DETECTED_LEVEL_B: "SØKER",
+            StatusFSM.FACE_DETECTED_LEVEL_B: "VENNLIGST VENT",
             StatusFSM.ALLOWED: "ADGANG TILLAT",
             StatusFSM.NOT_ALLOWED: "IKKE FUNNET",
         }
