@@ -55,7 +55,7 @@ class DataBase:
     def _check_db_exists(self):
         self.cursor.execute(
             "SELECT name FROM sqlite_master "
-            "WHERE type='table' AND name='app_settings'"
+            "WHERE type='table' AND name='turnstile_app'"
         )
         table_exists = self.cursor.fetchall()
         if table_exists:
