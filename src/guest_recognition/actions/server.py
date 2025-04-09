@@ -9,26 +9,28 @@ class Server:
         self.server_domain = settings.app.server_domain
         self.token = token
 
-    def turnstile_active(self, token):
+    def turnstile_active(self, token=None):
         if token:
             self.token = token
         try:
             return self._request_turnstile_activating()
-        except:
+        except Exception as e:
+            print("Exception turnstile_active", e)
             return None
 
     def turnstile_passage(self, frames):
         try:
             return self._request_turnstile_passage(frames=frames)
-        except:
+        except Exception as e:
+            print("Exception turnstile_passage", e)
             return None
 
     def _request_turnstile_activating(self):
         url = self._create_url(path="api/v1/turnstile/activate")
-        headres = self._get_headers_with_token()
+        headers = self._get_headers_with_token()
         response = requests.patch(
             url=url,
-            headres=headres,
+            headers=headers,
         )
 
         response.raise_for_status()
@@ -39,8 +41,12 @@ class Server:
 
     def _request_turnstile_passage(self, frames):
         url = self._create_url(path="api/v1/turnstile/passage")
-        headres = self._get_headers_with_token()
-        response = requests.post(url=url, headres=headres, files={"frames": frames})
+        headers = self._get_headers_with_token()
+        response = requests.post(
+            url=url,
+            headers=headers,
+            files=frames,
+        )
 
         response.raise_for_status()
 
