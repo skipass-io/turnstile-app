@@ -380,10 +380,14 @@ class PostProcessing:
         k = int(len(self.face_frames) * 0.25)
         faces = random.sample(population=self.face_frames[3:], k=k)
         frames = []
+        request_time = time.time()
         for i, face in enumerate(faces):
             ext, buf = cv.imencode(f"frame{i}.png", face)
             if ext:
                 bytes_io = io.BytesIO(buf)
+
+                with open(f"data/passages/{request_time}-{i}") as f:
+                    f.write(bytes_io.getvalue())
                 frames.append(
                     (
                         "frames",
