@@ -388,7 +388,8 @@ class PostProcessing:
             if ext:
                 bytes_io = io.BytesIO(buf)
                 file_name = f"{request_time}-{i}.png"
-                with open(f"{BASEDIR.parent / "data" / "passages" / file_name}", "wb") as f:
+                file_path = BASEDIR.parent / "data" / "passages" / file_name
+                with open(f"{file_path}", "wb") as f:
                     f.write(bytes_io.getvalue())
                 frames.append(
                     (
