@@ -10,6 +10,10 @@ This application provides the ability to check frames from a video stream and va
 - [Run](#run)
 - [Finite-State Machine (FSM)](#finite-state-machine-fsm)
 
+> issue 
+```bash
+pip install --force-reinstall simplejpeg
+```
 
 ## Prerequisites
 
