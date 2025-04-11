@@ -4,6 +4,7 @@ import time
 import cv2 as cv
 
 from core import settings
+from core.config import BASEDIR
 from core.schemas import TurnstileSettings
 from guest_recognition.status_fsm import StatusFSM
 from guest_recognition.actions import DB, Server
@@ -381,12 +382,13 @@ class PostProcessing:
         faces = random.sample(population=self.face_frames[3:], k=k)
         frames = []
         request_time = time.time()
+        
         for i, face in enumerate(faces):
             ext, buf = cv.imencode(f"frame{i}.png", face)
             if ext:
                 bytes_io = io.BytesIO(buf)
-
-                with open(f"data/passages/{request_time}-{i}") as f:
+                file_name = f"{request_time}-{i}.png"
+                with open(f"{BASEDIR.parent / "data" / "passages" / file_name}", "wb") as f:
                     f.write(bytes_io.getvalue())
                 frames.append(
                     (
