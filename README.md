@@ -6,6 +6,7 @@ This application provides the ability to check frames from a video stream and va
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Setup](#setup)
 - [Run](#run)
 - [Finite-State Machine (FSM)](#finite-state-machine-fsm)
 
@@ -73,6 +74,11 @@ Use Poetry to install all the required dependencies listed in your pyproject.tom
 ```bash
 poetry install
 ```
+
+## Setup
+In `src` dir, create `.env` file with `APP_CONFIG__APP__SERVER_DOMAIN` env of correct server domain
+
+In `.env` you can redefine another envs from `.env.template`, such as camera settings
 
 ## Run 
 
