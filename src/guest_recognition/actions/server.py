@@ -87,11 +87,11 @@ class Server:
     def _request_turnstile_passage(self, frequent_label, svm_model_id):
         url = self._create_url(path="api/v1/turnstile/passage_label")
         headers = self._get_headers_with_token()
-        # headers["Content-Type"] = "application/json"
+        headers["Content-Type"] = "application/json"
         response = requests.post(
             url=url,
             headers=headers,
-            data={"frequent_label": frequent_label, "svm_model_id": svm_model_id},
+            json=json.dumps({"frequent_label": frequent_label, "svm_model_id": svm_model_id}),
         )
 
         response.raise_for_status()
