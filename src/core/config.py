@@ -49,6 +49,7 @@ class AeMeteringModeEnum(str, Enum):
 class AppConfig(BaseModel):
     server_domain: str
     recruitment_form_url: str
+    second_limit_activation_request: int
 
 
 class QTConfig(BaseModel):
@@ -86,6 +87,8 @@ class TurnstileConfig(BaseModel):
     default: TurnstileDefaultConfig
 
     passage_time_limit: int
+    labels_count: int
+    frequent_label_percent: int
 
     # Settigs
 
@@ -119,4 +122,4 @@ class Settings(BaseSettings):
     fd: FaceDetectorConfig = FaceDetectorConfig()
 
 
-settings = Settings()
+settings = Settings()  # type: ignore
