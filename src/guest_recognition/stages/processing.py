@@ -55,8 +55,8 @@ class Processing:
         self.cv_gray = cv_gray
 
     def _detect_qrcode(self):
-        # if self.status != StatusFSM.NOT_ACTIVE:
-        #     return
+        if self.status != StatusFSM.NOT_ACTIVE:
+            return
 
         return self.pyzbar.detect_qrcode(self.cv_gray)
 
