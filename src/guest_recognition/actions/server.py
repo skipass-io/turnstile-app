@@ -103,7 +103,7 @@ class Server:
     def _request_turnstile_last_svm_model_id(self):
         url = self._create_url(path="api/v1/turnstile/last_svm_model_id")
         headers = self._get_headers_with_token()
-        response = requests.post(
+        response = requests.get(
             url=url,
             headers=headers,
         )
