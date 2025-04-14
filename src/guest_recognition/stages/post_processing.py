@@ -15,6 +15,7 @@ from guest_recognition.utils import FPS, OpenCV, TurnstileGPIO
 
 class PostProcessing:
     def __init__(self):
+        self.frequent_label = "NONE"
         # SVM Model
 
         self.svm_model = SVMModel()
