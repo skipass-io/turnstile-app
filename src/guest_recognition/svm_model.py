@@ -22,8 +22,8 @@ class SVMModel:
 
         # Main
         self.svm_model_id: Optional[int] = self.db.get_svm_model_id()
-        self.svm_model: SVC
-        self.encoder: LabelEncoder
+        self.svm_model: Optional[SVC] = None
+        self.encoder: Optional[LabelEncoder] = None
         self.embedder = Embedder()
 
     def recognize(self, face_coords, cv_rgb, server) -> str:
