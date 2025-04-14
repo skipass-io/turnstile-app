@@ -144,7 +144,7 @@ class PostProcessing:
                 )
 
             case StatusFSM.FACE_DETECTED_LEVEL_B:
-                self.labels = []  # full reset
+                self._full_reset()
                 self._set_status_and_progress(
                     status=StatusFSM.FACE_DETECTED_LEVEL_A,
                     progress=int(
@@ -219,7 +219,7 @@ class PostProcessing:
                 )
 
             case StatusFSM.FACE_DETECTED_LEVEL_B:
-                self.labels = []  # full reset
+                self._full_reset()
                 self._set_status_and_progress(
                     status=StatusFSM.FACE_DETECTED_LEVEL_C,
                     progress=int(
@@ -258,7 +258,7 @@ class PostProcessing:
                     status=StatusFSM.DETECTING,
                 )
             case StatusFSM.QRCODE_DETECTED | StatusFSM.FACE_DETECTED_LEVEL_B:
-                self.labels = []  # full reset
+                self._full_reset()
                 self._set_status_and_progress(
                     status=StatusFSM.DETECTING,
                 )
@@ -269,10 +269,8 @@ class PostProcessing:
 
     def _stage_perfomance(self):
         performance_params = dict()
-        performance_params["label"] = self.frequent_label
         performance_params["fps"] = self.fps.get_frames_per_second()
         performance_params["brt"] = self.open_cv.get_brightness(frame=self.frame)
-        # performance_params["status"] = self.status.value  # type: ignore
 
         self.open_cv.output_performance(
             frame=self.frame,
@@ -427,3 +425,8 @@ class PostProcessing:
             if collected_labels.count(frequent_label) >= required_quantity
             else None
         )
+
+    def _full_reset(self):
+        duration = self._turnstile_passage_duration()
+        if duration > 5:
+            self.labels = [] 
