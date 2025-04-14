@@ -68,6 +68,7 @@ class SVMModel:
         if self.svm_model_id is None:
             self.download(server)
         if self.svm_model is None or self.encoder is None:
+            self.download(server)
             self.load(self.svm_model_id)  # type: ignore
 
     def _svm_model_path(self, svm_model_id):
