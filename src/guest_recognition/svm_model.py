@@ -40,10 +40,9 @@ class SVMModel:
         encoder = LabelEncoder()
         with open(self._svm_model_path(svm_model_id), "rb") as f:
             self.svm_model = pickle.loads(f.read())
-        with open(self._embeddings_path(svm_model_id), "rb") as f:
-            faces_embeddings = np.load(f.read())
-            Y = faces_embeddings["arr_1"]
-            self.encoder = encoder.fit(Y)
+        faces_embeddings = np.load(self._embeddings_path(svm_model_id))
+        Y = faces_embeddings["arr_1"]
+        self.encoder = encoder.fit(Y)
 
         self.svm_model_id = svm_model_id
 
