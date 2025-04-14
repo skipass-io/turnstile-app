@@ -48,9 +48,9 @@ class SVMModel:
         self.svm_model_id = svm_model_id
 
     def download(self, server: Server):  # TODO: WITH INIT ACTIVATE TOKEN
-        svm_model_id = server.turnstile_last_svm_model_id()
-        if self.svm_model_id == svm_model_id:
-            return False
+        # svm_model_id = server.turnstile_last_svm_model_id()
+        # if self.svm_model_id == svm_model_id:
+        #     return False
         svm_model_downloaded = server.download_svm_model(
             save_path=self._svm_model_path(svm_model_id)
         )
