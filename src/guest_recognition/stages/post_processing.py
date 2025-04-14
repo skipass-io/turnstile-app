@@ -268,9 +268,10 @@ class PostProcessing:
 
     def _stage_perfomance(self):
         performance_params = dict()
+        performance_params["label"] = self.frequent_label
         performance_params["fps"] = self.fps.get_frames_per_second()
         performance_params["brt"] = self.open_cv.get_brightness(frame=self.frame)
-        performance_params["status"] = self.status.value  # type: ignore
+        # performance_params["status"] = self.status.value  # type: ignore
 
         self.open_cv.output_performance(
             frame=self.frame,
@@ -371,7 +372,7 @@ class PostProcessing:
         self.db.set_passage(
             passage_id=passage.id,
             passage_duration=self._turnstile_passage_duration(),
-            frequent_label=frequent_label
+            frequent_label=frequent_label,
         )
 
     # TURNSTILE_PART
@@ -416,6 +417,7 @@ class PostProcessing:
         collected_labels = self.labels
         self.labels = []
         frequent_label = max(set(collected_labels), key=collected_labels.count)
+        self.frequent_label = frequent_label
         required_quantity = int(
             self.MAX_LABELS_COUNT * self.FREQUENT_LABEL_PERCENT / 100
         )
