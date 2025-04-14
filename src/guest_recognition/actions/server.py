@@ -91,7 +91,7 @@ class Server:
         response = requests.post(
             url=url,
             headers=headers,
-            json=json.dumps({"frequent_label": frequent_label, "svm_model_id": svm_model_id}),
+            json={"frequent_label": frequent_label, "svm_model_id": svm_model_id},
         )
 
         response.raise_for_status()
