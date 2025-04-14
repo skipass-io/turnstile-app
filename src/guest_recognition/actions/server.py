@@ -35,38 +35,40 @@ class Server:
         return self._request_turnstile_last_svm_model_id()
 
     def download_svm_model(self, save_path):
-        try:
-            url = self._create_url(path="api/v1/turnstile/download_svm_model")
-            headers = self._get_headers_with_token()
-            response = requests.get(url=url, headers=headers, stream=True)
+        # try:
+        url = self._create_url(path="api/v1/turnstile/download_svm_model")
+        headers = self._get_headers_with_token()
+        response = requests.get(url=url, headers=headers, stream=True)
 
-            response.raise_for_status()
+        response.raise_for_status()
 
-            with open(save_path, "wb") as file:
-                file.write(response.content)
+        with open(save_path, "wb") as file:
+            file.write(response.content)
 
-            print(f"SVM model successfully downloaded to {save_path}")
-            return True
-        except Exception as e:
-            print(f"Error downloading SVM model: {e}")
-            return False
+        print(f"SVM model successfully downloaded to {save_path}")
+        return True
+
+    # except Exception as e:
+    #     print(f"Error downloading SVM model: {e}")
+    #     return False
 
     def download_embeddings(self, save_path):
-        try:
-            url = self._create_url(path="api/v1/turnstile/download_embeddings")
-            headers = self._get_headers_with_token()
-            response = requests.get(url=url, headers=headers, stream=True)
+        # try:
+        url = self._create_url(path="api/v1/turnstile/download_embeddings")
+        headers = self._get_headers_with_token()
+        response = requests.get(url=url, headers=headers, stream=True)
 
-            response.raise_for_status()
+        response.raise_for_status()
 
-            with open(save_path, "wb") as file:
-                file.write(response.content)
+        with open(save_path, "wb") as file:
+            file.write(response.content)
 
-            print(f"Embeddings successfully downloaded to {save_path}")
-            return True
-        except Exception as e:
-            print(f"Error downloading embeddings: {e}")
-            return False
+        print(f"Embeddings successfully downloaded to {save_path}")
+        return True
+
+    # except Exception as e:
+    #     print(f"Error downloading embeddings: {e}")
+    #     return False
 
     def _request_turnstile_activating(self):
         url = self._create_url(path="api/v1/turnstile/activate")
