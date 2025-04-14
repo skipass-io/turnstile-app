@@ -72,7 +72,15 @@ class SVMModel:
             self.load(self.svm_model_id)  # type: ignore
 
     def _svm_model_path(self, svm_model_id):
-        return f"{SVM_MODELS_DIR}/svm_model_{svm_model_id}.pkl"
+        print("_svm_model_path")
+        file_name = f"svm_model_{svm_model_id}.pkl"
+        file_path = SVM_MODELS_DIR / file_name
+        print(file_path)
+        return str(file_path)
 
     def _embeddings_path(self, svm_model_id):
-        return f"{EMBEDDINGS_DIR}/embeddings_{svm_model_id}.npz"
+        print("_embeddings_path")
+        file_name = f"embeddings_{svm_model_id}.npz"
+        file_path = EMBEDDINGS_DIR / file_name
+        print(file_path)
+        return str(file_path)
