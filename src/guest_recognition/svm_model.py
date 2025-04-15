@@ -1,4 +1,5 @@
 import pickle
+import time
 from typing import Optional
 
 import numpy as np
@@ -25,9 +26,19 @@ class SVMModel:
         self.svm_model: Optional[SVC] = None
         self.encoder: Optional[LabelEncoder] = None
         self.embedder = Embedder()
+        self.check_time = None
 
     def recognize(self, face_coords, cv_rgb, server) -> str:
-        self._check_svm_model_and_encoder_loaded(server)
+        # Checking
+        if self.check_time is None:
+            self._check_svm_model_and_encoder_loaded(server)
+            self.check_time = time.time()
+        now = time.time()
+        delay = now - self.check_time
+        if delay > 30:
+            self._check_svm_model_and_encoder_loaded(server)
+
+        # Recognize
         ypred = self.embedder.get_embeddings(
             face_coords=face_coords,
             cv_rgb=cv_rgb,
@@ -67,6 +78,10 @@ class SVMModel:
         if self.svm_model_id is None:
             self.download(server)
         if self.svm_model is None or self.encoder is None:
+            self.download(server)
+            self.load(self.svm_model_id)  # type: ignore
+        svm_model_id = server.turnstile_last_svm_model_id()
+        if svm_model_id != self.svm_model_id:
             self.download(server)
             self.load(self.svm_model_id)  # type: ignore
 
