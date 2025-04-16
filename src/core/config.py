@@ -100,6 +100,11 @@ class DatabaseConfig(BaseModel):
 
 
 class FaceDetectorConfig(BaseModel):
+    # blazeface
+    blazeface_file: str = "detector.tflite"
+    blazeface_path: Path = BASEDIR / "assets" / "models" / blazeface_file
+
+    # haarcascade
     haarcascade_file: str = "haarcascade_frontalface_default.xml"
     haarcascade_path: Path = BASEDIR / "assets" / "models" / haarcascade_file
     scale_factor: float = 1.1
