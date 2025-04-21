@@ -2,16 +2,29 @@ import cv2 as cv
 
 from core import settings
 from guest_recognition.status_fsm import StatusFSM
-from guest_recognition.detectors import DetectorPyzbar, DetectorHaarcascade
+from guest_recognition.detectors import (
+    DetectorBlazeface,
+    DetectorPyzbar,
+    DetectorHaarcascade,
+)
 from guest_recognition.utils import OpenCV
 
 
 class Processing:
     def __init__(self):
         # Detectors
+        ## QR
         self.pyzbar = DetectorPyzbar()
+
+        ## Face
+        self.blazeface = DetectorBlazeface(
+            blazeface_path=settings.fd.blazeface_path,
+            min_detection_confidence=0.6,  # TODO: add to settings
+            min_suppression_threshold=0.3,  # TODO: add to settings
+        )
+
         self.haarcascade = DetectorHaarcascade(
-            haarcascade_file=str(settings.fd.haarcascade_path),
+            haarcascade_path=str(settings.fd.haarcascade_path),
             scale_factor=settings.fd.scale_factor,
             min_neighbors=settings.fd.min_neighbors,
             min_size=(136, 136),
@@ -29,11 +42,9 @@ class Processing:
         self.detected_qrcode = None
         self.detected_face = None
 
-    def stage(self, status, frame, cv_gray):
+    def stage(self, status, frame, cv_gray, mp_image):
         self._set_data_input(
-            status=status,
-            frame=frame,
-            cv_gray=cv_gray,
+            status=status, frame=frame, cv_gray=cv_gray, mp_image=mp_image
         )
 
         self.detected_qrcode = self._detect_qrcode()
@@ -49,10 +60,12 @@ class Processing:
         status,
         frame,
         cv_gray,
+        mp_image,
     ):
         self.status = status
         self.frame = frame
         self.cv_gray = cv_gray
+        self.mp_image = mp_image
 
     def _detect_qrcode(self):
         if self.status != StatusFSM.NOT_ACTIVE:
@@ -61,10 +74,11 @@ class Processing:
         return self.pyzbar.detect_qrcode(self.cv_gray)
 
     def _detect_face(self):
-        if self.status == StatusFSM.NOT_ACTIVE:
-            return
+        # if self.status == StatusFSM.NOT_ACTIVE:
+        #     return
 
-        return self.haarcascade.detect_face(self.cv_gray)
+        # return self.haarcascade.detect_face(self.cv_gray)
+        return self.blazeface.detect_face(self.mp_image)
 
     def _show_detected_qrcode(self):
         qrcode_rect = self.pyzbar.get_coords_qrcode(self.detected_qrcode)
