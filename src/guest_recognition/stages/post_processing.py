@@ -43,6 +43,7 @@ class PostProcessing:
         self.labels = []
         self.MAX_LABELS_COUNT = settings.turnstile.labels_count
         self.FREQUENT_LABEL_PERCENT = settings.turnstile.frequent_label_percent
+        self.passage_frequent_label = None
 
         self.turnstile_settings_default: TurnstileSettings = TurnstileSettings(
             **settings.turnstile.default.model_dump()
@@ -65,7 +66,7 @@ class PostProcessing:
         detected_qrcode,
         detected_face,
     ):
-        self._set_data_input(  # TODO: remove self
+        self._set_data_input(
             width=width,
             height=height,
             frame=frame,
@@ -282,11 +283,18 @@ class PostProcessing:
     def _stage_check_allowed_status(self):
         passing_time = time.time() - self.passage_time  # type: ignore
 
+        #######################
+        #                     #
+        #   TODO: algorithm   #
+        #                     #
+        #######################
+
         if passing_time >= self.PASSAGE_TIME_LIMIT:
             self._turnstile_close_gate()
             self._set_status_and_progress(
                 status=StatusFSM.DETECTING,
             )
+            self.passage_frequent_label = None
         else:
             self._set_status_and_progress(
                 status=StatusFSM.ALLOWED,
@@ -296,15 +304,67 @@ class PostProcessing:
     def _stage_check_not_allowed_status(self):
         passing_time = time.time() - self.passage_time  # type: ignore
 
+        #######################
+        #                     #
+        #   TODO: algorithm   #
+        #                     #
+        #######################
+
         if passing_time >= self.PASSAGE_TIME_LIMIT:
             self._set_status_and_progress(
                 status=StatusFSM.DETECTING,
             )
+            self.passage_frequent_label = None
         else:
             self._set_status_and_progress(
                 status=StatusFSM.NOT_ALLOWED,
                 progress=int(passing_time / self.PASSAGE_TIME_LIMIT * 100),
             )
+
+    # PASSING ALGORITHM
+    def _passing_algorithm(self, passing_time):
+        if self.passing_algorithm:
+            return self._passing_algorithm_launch(passing_time)
+        if self.detected_face is None:
+            return
+        
+        label = self.svm_model.recognize(
+            face_coords=self.detected_face["rect"],  # type: ignore
+            cv_rgb=self.cv_rgb,
+            server=self.server,
+        )
+        self.labels.append(label)
+
+    def _passing_algorithm_launch(self, passing_time):
+        if passing_time < 2:
+            return
+        if (self.PASSAGE_TIME_LIMIT - passing_time) < 1:
+            return
+        if self.passing_algorithm_time is None:
+            self.passing_algorithm_time = time.time()
+
+        passing_algorithm_time = time.time() - self.passing_algorithm_time
+        if passing_algorithm_time > 1:
+            self._passing_algorithm_reset()
+            frequent_label = self._get_frequent_label()
+            self._passing_algorithm_check(frequent_label)
+        if self.detected_face is None:
+            return
+
+        label = self.svm_model.recognize(
+            face_coords=self.detected_face["rect"],  # type: ignore
+            cv_rgb=self.cv_rgb,
+            server=self.server,
+        )
+        self.labels.append(label)
+
+    def _passing_algorithm_check(self, frequent_label):
+        if self.passage_frequent_label != frequent_label:
+            self.passing_algorithm = False
+
+    def _passing_algorithm_reset(self):
+        self.labels = []
+        self.passing_algorithm_time = None
 
     # SET_PART
     def _set_data_input(
@@ -367,6 +427,7 @@ class PostProcessing:
             return
 
         self._turnstile_passage_access(passage)
+        self.passage_frequent_label = frequent_label
 
         self.db.set_passage(
             passage_id=passage.id,
@@ -376,6 +437,7 @@ class PostProcessing:
 
     # TURNSTILE_PART
     def _turnstile_passage_access(self, passage):
+        self.passing_algorithm = True
         if passage.access:
             self._turstile_open_gate()
             self._set_status_and_progress(
@@ -415,6 +477,10 @@ class PostProcessing:
     def _get_frequent_label(self):
         collected_labels = self.labels
         self.labels = []
+
+        if len(collected_labels) <= 3:
+            return None
+
         frequent_label = max(set(collected_labels), key=collected_labels.count)
         self.frequent_label = frequent_label
         required_quantity = int(
@@ -429,4 +495,4 @@ class PostProcessing:
     def _full_reset(self):
         duration = self._turnstile_passage_duration()
         if duration > 5:
-            self.labels = [] 
+            self.labels = []
