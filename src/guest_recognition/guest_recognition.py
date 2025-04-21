@@ -27,6 +27,7 @@ class GuestRecognition:
             status=self.status,
             frame=self.pre_processing.frame,
             cv_gray=self.pre_processing.cv_gray,
+            mp_image=self.pre_processing.mp_image,
         )
 
         self.post_processing.stage(

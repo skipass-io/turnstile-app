@@ -1,4 +1,5 @@
 import cv2 as cv
+import mediapipe as mp
 
 
 class PreProcessing:
@@ -12,3 +13,4 @@ class PreProcessing:
         self.frame = mapped_array.array
         self.cv_rgb = cv.cvtColor(self.frame, cv.COLOR_BGR2RGB)
         self.cv_gray = cv.cvtColor(self.frame, cv.COLOR_BGR2GRAY)
+        self.mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=self.cv_rgb)
