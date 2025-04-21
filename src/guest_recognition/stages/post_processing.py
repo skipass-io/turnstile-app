@@ -283,11 +283,7 @@ class PostProcessing:
     def _stage_check_allowed_status(self):
         passing_time = time.time() - self.passage_time  # type: ignore
 
-        #######################
-        #                     #
-        #   TODO: algorithm   #
-        #                     #
-        #######################
+        self._passing_algorithm(passing_time)
 
         if passing_time >= self.PASSAGE_TIME_LIMIT:
             self._turnstile_close_gate()
@@ -304,11 +300,7 @@ class PostProcessing:
     def _stage_check_not_allowed_status(self):
         passing_time = time.time() - self.passage_time  # type: ignore
 
-        #######################
-        #                     #
-        #   TODO: algorithm   #
-        #                     #
-        #######################
+        self._passing_algorithm(passing_time)
 
         if passing_time >= self.PASSAGE_TIME_LIMIT:
             self._set_status_and_progress(
@@ -324,10 +316,10 @@ class PostProcessing:
     # PASSING ALGORITHM
     def _passing_algorithm(self, passing_time):
         if self.passing_algorithm:
-            return self._passing_algorithm_launch(passing_time)
+            return self._passing_algorithm_run(passing_time)
         if self.detected_face is None:
             return
-        
+
         label = self.svm_model.recognize(
             face_coords=self.detected_face["rect"],  # type: ignore
             cv_rgb=self.cv_rgb,
@@ -335,7 +327,7 @@ class PostProcessing:
         )
         self.labels.append(label)
 
-    def _passing_algorithm_launch(self, passing_time):
+    def _passing_algorithm_run(self, passing_time):
         if passing_time < 2:
             return
         if (self.PASSAGE_TIME_LIMIT - passing_time) < 1:
