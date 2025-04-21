@@ -55,6 +55,8 @@ class PostProcessing:
         self.status = None
         self.progress = None
 
+        self.passing_algorithm = None
+
     def stage(
         self,
         status,
