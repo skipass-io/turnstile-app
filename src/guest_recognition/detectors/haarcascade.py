@@ -6,13 +6,13 @@ import cv2 as cv
 class DetectorHaarcascade:
     def __init__(
         self,
-        haarcascade_file,
+        haarcascade_path,
         scale_factor,
         min_neighbors,
         min_size,
     ):
         # Detector
-        self.detector = cv.CascadeClassifier(haarcascade_file)
+        self.detector = cv.CascadeClassifier(haarcascade_path)
 
         # Settings
         self.scale_factor = scale_factor
